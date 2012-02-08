@@ -37,13 +37,13 @@ class User(object):
         self._connect = js_connect
         self.url = js_connect._rest_url + '/user/'
 
-    def get(self, search=''):
+    def search(self, query=''):
         """
         The GET method for the user service returns descriptors for all users
         that match the search string
         """
         res = []
-        res_xml = self._connect.get(self.url + search)
+        res_xml = self._connect.get(self.url + query)
         if res_xml:
             fp = StringIO(res_xml)
             tree = etree.parse(fp)
@@ -59,6 +59,25 @@ class User(object):
                                 n[i.tag].append(j.text)
                 res.append(n)
         print res
+
+    def create(self, name, login, password, roles=['ROLE_USER']):
+        """
+        Create a new user, if exists it return status 403
+        """
+        # ROLE_USER is necessary to display root folder (/) in jasperserver
+        if 'ROLE_USER' not in roles:
+            roles.append('ROLE_USER')
+        root = etree.Element('user')
+        etree.SubElement(root, 'enabled').text = 'true'
+        etree.SubElement(root, 'fullName').text = name
+        etree.SubElement(root, 'username').text = login
+        etree.SubElement(root, 'password').text = password
+        for r in roles:
+            role = etree.SubElement(root, 'roles')
+            etree.SubElement(role, 'roleName').text = r
+        return self._connect.put(self.url, 'text/plain', etree.tostring(root))
+
+
 
 class Role(object):
     """
