@@ -72,15 +72,40 @@ class Client(object):
 
     def put(self, url, content_type='text/plain', body=''):
         """
-        Send a single content
+        send a single content
         """
-        headers = {'Content-type': content_type}
+        headers = {'content-type': content_type}
         headers.update(self.headers)
         response, content = self.http.request(url, method='PUT', body=body, headers=headers)
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
 
         return (response.get('status'), content)
+
+    def post(self, url, content_type='text/plain', body=''):
+        """
+        send a single content
+        """
+        headers = {'content-type': content_type}
+        headers.update(self.headers)
+        response, content = self.http.request(self._clean_url(url), method='POST', body=body, headers=headers)
+        if response.get('status', '500') in StatusException:
+            raise StatusException[response['status']]()
+
+        return (response.get('status'), content)
+
+    def delete(self, url):
+        headers = {}
+        headers.update(self.headers)
+        response, content = self.http.request(self._clean_url(url), method='DELETE', headers=headers)
+        if response.get('status', '500') in StatusException:
+            raise StatusException[response['status']]()
+
+        return (response.get('status'), content)
+
+    @staticmethod
+    def _clean_url(url):
+        return urllib.quote(url.replace('//', '/').replace('http:/', 'http://'), safe=':/')
 
     def __str__(self,):
         return '%s Cookie: %s' % (self._url, self.headers.get('Cookie',''))
