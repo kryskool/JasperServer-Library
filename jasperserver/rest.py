@@ -30,8 +30,9 @@ class Client(object):
     Create a REST connection, with authentification
     """
     http = None
-    cookie = False
-    user_agent = 'JasperServer-Python'
+    headers = {
+        'User-Agent': 'JasperServer-Python',
+    }
 
     def __init__(self, url, username='jasperadmin', password='jasperadmin'):
         self._url = url
@@ -45,6 +46,7 @@ class Client(object):
         Send POST authentification and retrieve the cookie
         """
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        headers.update(self.headers)
         params = urllib.urlencode({
                 'j_username': username,
                 'j_password': password,
@@ -54,24 +56,33 @@ class Client(object):
         if response.get('status', '500') != '200':
             raise JsException('Login Error')
 
-        self.cookie = response.get('set-cookie',False)
+        self.headers['Cookie'] = response.get('set-cookie',False)
 
     def get(self, url, args=None):
         """
         Send a http GET query
         """
-        headers = {
-            'User-Agent': self.user_agent,
-            'Cookie': self.cookie,
-        }
+        headers = {}
+        headers.update(self.headers)
         response, content = self.http.request(url, headers=headers)
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
 
         return content
 
+    def put(self, url, content_type='text/plain', body=''):
+        """
+        Send a single content
+        """
+        headers = {'Content-type': content_type}
+        headers.update(self.headers)
+        response, content = self.http.request(url, method='PUT', body=body, headers=headers)
+        if response.get('status', '500') in StatusException:
+            raise StatusException[response['status']]()
+
+        return (response.get('status'), content)
 
     def __str__(self,):
-        return '%s Cookie: %s' % (self._url, self.cookie)
+        return '%s Cookie: %s' % (self._url, self.headers.get('Cookie',''))
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
