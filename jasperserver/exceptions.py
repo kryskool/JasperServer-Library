@@ -49,6 +49,14 @@ class Unauthorized(JsException):
     def __init__(self, value='Bad Request'):
         self.value = value
 
+class Forbidden(JsException):
+    """
+    Error 403
+    """
+    def __init__(self, value='Forbidden'):
+        self.value = value
+
+
 class NotFound(JsException):
     """
     Raise this when error 404
@@ -62,6 +70,8 @@ class NotFound(JsException):
 #    raise StatusException[status]()
 StatusException = {
     '400': BadRequest,
+    '401': Unauthorized,
+    '403': Forbidden,
     '404': NotFound,
 }
 
