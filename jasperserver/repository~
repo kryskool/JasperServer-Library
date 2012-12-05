@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    jasperserver library module for OpenERP
+#    Copyright (C) 2012 SYLEAM ([http://www.syleam.fr]) Christophe CHAUVET
+#
+#    This file is a part of jasperserver library
+#
+#    jasperserver library is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    jasperserver library is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see [http://www.gnu.org/licenses/].
+#
+##############################################################################
+
+from StringIO import StringIO
+
+try:
+	from lxml import etree
+except ImportError:
+	import xml.etree.cElementTree as etree
+
+class Resources (object) :
+
+	def __init__(self, js_connect, path):
+		self._connect = js_connect
+		self.path = path
+        self.url = js_connect._rest_url + '/resources' + path
+
+	def get(description, wstype, recursive=0, item_max=0):
+		arg1=''
+		arg2=''
+		if description :
+			arg1 = '?q=' + description
+
+		if wsType :
+			arg2 = '?type=' + wstype
+
+		arg3 = '?recursive=' + recursive
+		arg4 = '?limit=' + itme_max
+			
+		self._connect.get(self.url + arg1 + arg2 + arg3 + arg4)
+		res_xml= []
+		res_xml = self._connect.get(self.url + arg1 + arg2 + arg3 + arg4)
+
+		if res_xml:
+            fp = StringIO(res_xml)
+            tree = etree.parse(fp)
+            for node in tree.findall('//resourceDescriptor'):
+                d = {}
+                for i in node:
+                    if i.tag in ('label', 'description'):
+                        n[i.tag] = i.text
+                    
+                res.append(n)
+
+        print res
+		
+	
+
+class Resource (Resources)
+

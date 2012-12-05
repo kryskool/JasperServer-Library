@@ -58,8 +58,7 @@ class User(object):
                             if j.tag == 'roleName':
                                 n[i.tag].append(j.text)
                 res.append(n)
-        print 'resultat search', query, '=\n', res
-        return res
+        print res
 
     def create(self, name, login, password, roles=['ROLE_USER']):
         """
@@ -77,6 +76,11 @@ class User(object):
             role = etree.SubElement(root, 'roles')
             etree.SubElement(role, 'roleName').text = r
         return self._connect.put(self.url, 'text/plain', etree.tostring(root))
+
+    def get(self, login):
+        res_xml = self._connect.get (self.url + login) 
+        print res_xml
+
 
 
 class Role(object):

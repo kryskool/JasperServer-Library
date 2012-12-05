@@ -1,0 +1,7 @@
+<resourceDescriptor name="myfolder" wsType="folder" uriString="/myfolder" 
+    isNew="false">
+    <label>REST created folder</label>
+    <resourceProperty name="PROP_PARENT_FOLDER">
+        <value>/</value>
+    </resourceProperty>
+</resourceDescriptor>

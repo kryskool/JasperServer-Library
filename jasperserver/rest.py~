@@ -21,8 +21,7 @@
 #
 ##############################################################################
 
-import urllib
-import urllib2
+import urllib, urllib2
 import httplib2
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
@@ -44,7 +43,7 @@ class Client(object):
         self._rest_url = url + '/rest'
         self.http = httplib2.Http()
         self._login(username, password)
-        #pass
+        pass
 
     def _login(self, username, password):
         """
@@ -63,15 +62,13 @@ class Client(object):
 
         self.headers['Cookie'] = response.get('set-cookie', False)
 
-    def get(self, url, content_type='text/plain', params=''):
+    def get(self, url, args=None):
         """
         Send a http GET query
         """
-        headers = {'content-type': content_type}
+        headers = {}
         headers.update(self.headers)
-        if params:
-            url = url + '?%s' % params
-        response, content = self.http.request(url, method="GET", body=params, headers=headers)
+        response, content = self.http.request(url, headers=headers)
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
 
@@ -84,8 +81,6 @@ class Client(object):
         headers = {'content-type': content_type}
         headers.update(self.headers)
         print headers
-        print url
-        print body
         response, content = self.http.request(url, method='PUT', body=body, headers=headers)
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
@@ -113,7 +108,7 @@ class Client(object):
 
         return (response.get('status'), content)
 
-    def put_post_multipart(self, url, path_xmltemplate, path_jrxmlresource, method):
+    def put_multipart(self, url, path_xmltemplate, path_jrxmlresource):
         register_openers()
         print 'path_xmltemplate =', path_xmltemplate
         xmltemplate = open(path_xmltemplate, 'r').read()
@@ -121,21 +116,19 @@ class Client(object):
             'ResourceDescriptor': xmltemplate
         }
         if path_jrxmlresource:
-            jrxml = open(path_jrxmlresource, 'r')
+            jrxml= open(path_jrxmlresource, 'r')
             values['jrxmlfile'] = jrxml
         data, headers = multipart_encode(values)
-        data = ''.join(data)
+        data = str().join(data)
         headers['Content-Length'] = str(len(xmltemplate))
+        headers['Connection'] = 'Keep-Alive'
         headers.update(self.headers)
-        print 'put in this url =', url
-        print 'headers :'
-        for k, v in headers.items():
-            print 'data :\n', data
-        response, content = self.http.request(url, method=method, body=data, headers=headers)
-        print 'Reponse ='
-        for k, v in response.items():
-            print '     ', k, ':', v
-        print 'Content =\n', content
+        print 'url =', url
+        print 'headers :', headers
+        print 'data :', data
+        response, content = self.http.request(url, method='PUT', body=data, headers=headers)
+        print 'Reponse =', response
+        return content
 
     @staticmethod
     def _clean_url(url):
