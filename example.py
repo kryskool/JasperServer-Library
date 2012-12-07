@@ -29,11 +29,13 @@ try:
                         '/openerp/bases/openerp_demo'
     )
     print '\n#######################\n'
-    resource1.create('/home/keyuser/workspace/git/JasperServer-Library/template/examplefolder_resource.xml',
-    #                '/home/keyuser/workspace/jasperserver/repository/report1.jrxml'
+    resource1.create('$YOURPATH/JasperServer-Library/template/examplefolder_resource.xml',
+    #                '$YOURPATH/reportname.jrxml'
     )
     print '\n#######################\n'
+    #Reportv2 use REST-v2 report Service
     report1 = Reportv2(client, '/openerp/bases/openerp_demo')
+    #Report use REST report Service
     report2 = Report(client, '/openerp/bases/openerp_demo')
 
     name = raw_input('nom du report: ')
@@ -42,11 +44,11 @@ try:
         sys.exit()
     extension = raw_input('format du fichier (par exemple: pdf): ')
     report1.run(name, extension)
-    '''
+    
     print '\n#######################\n'
     nametodelete = raw_input('Nom du rapport a supprimer : ')
     resource1.delete (nametodelete)
-    '''
+    
     name = raw_input('nom du report2: ')
     if name == 'exit':
         print 'sortie du programme'

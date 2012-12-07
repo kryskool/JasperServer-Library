@@ -1,2 +1,4 @@
 *.pyc
+*.py~
+exampleperso.py
 doc/build/*

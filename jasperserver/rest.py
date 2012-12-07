@@ -117,6 +117,7 @@ class Client(object):
         register_openers()
         print 'path_xmltemplate =', path_xmltemplate
         xmltemplate = open(path_xmltemplate, 'r').read()
+        print 'xmltemplate : ', xmltemplate
         values = {
             'ResourceDescriptor': xmltemplate
         }
@@ -128,13 +129,14 @@ class Client(object):
         headers['Content-Length'] = str(len(xmltemplate))
         headers.update(self.headers)
         print 'put in this url =', url
-        print 'headers :'
+        print 'headers ='
         for k, v in headers.items():
-            print 'data :\n', data
+            print '    ', k, ':', v
+        print 'data =\n', data
         response, content = self.http.request(url, method=method, body=data, headers=headers)
         print 'Reponse ='
         for k, v in response.items():
-            print '     ', k, ':', v
+            print '    ', k, ':', v
         print 'Content =\n', content
 
     @staticmethod

@@ -27,10 +27,9 @@ class Report(object):
         self._connect = js_connect
         self.url = js_connect._rest_url + '/report' + path + '/'
 
-
-    def run(self, reportname, output_format='PDF', num_page='',images='images', x_method_override='PUT', ignorepagination='', onepagepersheet=''):
+    def run(self, reportname, output_format='PDF', num_page='', images='images', x_method_override='PUT', ignorepagination='', onepagepersheet=''):
         params = {'RUN_OUTPUT_FORMAT': output_format,
-             'IMAGES_URI': images,
+             'IMAGES_URI': images
         }
         if num_page:
             params['PAGE'] = num_page
@@ -44,10 +43,10 @@ class Report(object):
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
 
-        for k,v in params.items():
+        for k, v in params.items():
             print '     ', k, ':', v
 
-        params= urllib.urlencode(params)
+        params = urllib.urlencode(params)
         print params
         reportpath = self.url + reportname
         response, content = self._connect.put(reportpath, 'application/x-www-form-urlencoded', params)
@@ -68,7 +67,7 @@ class Reportv2(Report):
 
     def run(self, name, output_format, page='', onepagepersheet=''):
         if page:
-        params = {'page' : page}
+            params = {'page': page}
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
         print self.url + name + '.' + output_format
