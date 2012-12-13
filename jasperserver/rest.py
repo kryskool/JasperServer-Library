@@ -22,9 +22,9 @@
 ##############################################################################
 
 import urllib
-import urllib2
 import httplib2
-from poster.encode import multipart_encode
+import urllib2
+from poster.encode import multipart_encode, MultipartParam
 from poster.streaminghttp import register_openers
 from exceptions import JsException, StatusException
 
@@ -36,7 +36,6 @@ class Client(object):
     http = None
     headers = {
        'User-Agent': 'JasperServer-Python',
-       #'User-Agent': 'Apache-HttpClient/4.1.1'
     }
 
     def __init__(self, url, username='jasperadmin', password='jasperadmin'):
@@ -114,26 +113,29 @@ class Client(object):
         return (response.get('status'), content)
 
     def put_post_multipart(self, url, path_xmltemplate, path_jrxmlresource, method):
-        register_openers()
-        print 'path_xmltemplate =', path_xmltemplate
-        xmltemplate = open(path_xmltemplate, 'r').read()
-        print 'xmltemplate : ', xmltemplate
-        values = {
-            'ResourceDescriptor': xmltemplate
-        }
-        if path_jrxmlresource:
-            jrxml = open(path_jrxmlresource, 'r')
-            values['jrxmlfile'] = jrxml
-        data, headers = multipart_encode(values)
-        data = ''.join(data)
-        headers['Content-Length'] = str(len(xmltemplate))
+        with open(path_xmltemplate, 'rb') as f1:
+            xmltemplate = f1.read()
+
+        if path_xmltemplate and path_jrxmlresource:
+            f2 = open(path_jrxmlresource,'r')
+            values = [
+                ('ResourceDescriptor', xmltemplate),
+                ('/images/imagetest.png', f2)
+            ]
+            data, headers = multipart_encode(values)
+            data = ''.join(data)
+
+        elif path_xmltemplate:
+            data = xmltemplate
+            headers = {'content-type': 'text/plain'}
+
         headers.update(self.headers)
         print 'put in this url =', url
         print 'headers ='
         for k, v in headers.items():
             print '    ', k, ':', v
         print 'data =\n', data
-        response, content = self.http.request(url, method=method, body=data, headers=headers)
+        response, content = self.http.request(url, method=method, headers=headers, body=data)
         print 'Reponse ='
         for k, v in response.items():
             print '    ', k, ':', v

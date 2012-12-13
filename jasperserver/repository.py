@@ -53,7 +53,7 @@ class Resource (Resources):
     def __init__(self, js_connect, path=''):
         self._connect = js_connect
         self.path = path
-        self.url = js_connect._rest_url + '/resource' + path + '/'
+        self.url = js_connect._rest_url + '/resource' + path
 
     def create(self, path_xmltemplate, path_jrxmlresource=None):
         self._connect.put_post_multipart(self.url, path_xmltemplate, path_jrxmlresource, method='PUT')

@@ -3,6 +3,7 @@
     <label>FicheProduit</label>
     <resourceProperty name="PROP_PARENT_FOLDER">
         <value>/openerp/bases/openerp_demo</value></resourceProperty>
+ </resourceDescriptor>
  <resourceDescriptor wsType="datasource" isNew="false">
     <resourceProperty name="PROP_REFERENCE_URI">
         <value>/datasources/openerp_demo</value>
