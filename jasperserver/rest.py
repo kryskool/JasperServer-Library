@@ -24,8 +24,7 @@
 import urllib
 import httplib2
 import urllib2
-from poster.encode import multipart_encode, MultipartParam
-from poster.streaminghttp import register_openers
+from poster.encode import multipart_encode
 from exceptions import JsException, StatusException
 
 
@@ -112,21 +111,18 @@ class Client(object):
 
         return (response.get('status'), content)
 
-    def put_post_multipart(self, url, path_xmltemplate, path_jrxmlresource, method):
-        with open(path_xmltemplate, 'rb') as f1:
-            xmltemplate = f1.read()
-
-        if path_xmltemplate and path_jrxmlresource:
-            f2 = open(path_jrxmlresource,'r')
+    def put_post_multipart(self, url, rd,  path_fileresource,  method, uri):
+        if rd and path_fileresource:
+            f2 = open(path_fileresource,'r')
             values = [
-                ('ResourceDescriptor', xmltemplate),
-                ('/images/imagetest.png', f2)
+                ('ResourceDescriptor', rd),
+                (uri, f2)
             ]
             data, headers = multipart_encode(values)
             data = ''.join(data)
 
-        elif path_xmltemplate:
-            data = xmltemplate
+        elif rd:
+            data = rd
             headers = {'content-type': 'text/plain'}
 
         headers.update(self.headers)
