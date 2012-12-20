@@ -81,9 +81,6 @@ class Client(object):
         """
         headers = {'content-type': content_type}
         headers.update(self.headers)
-        print headers
-        print url
-        print body
         response, content = self.http.request(url, method='PUT', body=body, headers=headers)
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
@@ -97,6 +94,9 @@ class Client(object):
         headers = {'content-type': content_type}
         headers.update(self.headers)
         response, content = self.http.request(self._clean_url(url), method='POST', body=body, headers=headers)
+        print url
+        print response
+        print content
         if response.get('status', '500') in StatusException:
             raise StatusException[response['status']]()
 
@@ -112,30 +112,24 @@ class Client(object):
         return (response.get('status'), content)
 
     def put_post_multipart(self, url, rd,  path_fileresource,  method, uri):
-        if rd and path_fileresource:
-            f2 = open(path_fileresource,'r')
-            values = [
-                ('ResourceDescriptor', rd),
-                (uri, f2)
-            ]
-            data, headers = multipart_encode(values)
-            data = ''.join(data)
-
-        elif rd:
-            data = rd
-            headers = {'content-type': 'text/plain'}
+        f = open(path_fileresource,'r')
+        values = [
+            ('ResourceDescriptor', rd),
+            (uri, f)
+        ]
+        data, headers = multipart_encode(values)
+        data = ''.join(data)
 
         headers.update(self.headers)
         print 'put in this url =', url
         print 'headers ='
         for k, v in headers.items():
             print '    ', k, ':', v
-        print 'data =\n', data
         response, content = self.http.request(url, method=method, headers=headers, body=data)
         print 'Reponse ='
         for k, v in response.items():
             print '    ', k, ':', v
-        print 'Content =\n', content
+
 
     @staticmethod
     def _clean_url(url):

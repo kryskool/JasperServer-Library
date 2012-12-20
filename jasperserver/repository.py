@@ -21,8 +21,9 @@
 #
 ##############################################################################
 
-from StringIO import StringIO
 import urllib
+from resourcedescriptor import *
+from fileresourcestat import *
 
 try:
     from lxml import etree
@@ -50,7 +51,8 @@ class Resources (object):
 
 class Resource (object):
 
-    def __init__(self, js_connect, path=''):
+    def __init__(self, js_connect, path='/', isModified=True):
+        self.isModified = isModified
         self._connect = js_connect
         self.path = path
         self.url = js_connect._rest_url + '/resource/' + path
@@ -58,11 +60,19 @@ class Resource (object):
         self.resource_name = ''
         self.uri = ''
 
-    def create(self, path_xmltemplate, path_fileresource=None):
-        self._connect.put_post_multipart(self.url, path_xmltemplate, path_fileresource, method='PUT', uri=self.uri)
+    def create(self, rd, path_fileresource=None):
+        if path_fileresource:
+            self._connect.put_post_multipart(self.url, rd, path_fileresource, method='PUT', uri=self.uri)
 
-    def modify(self, path_xmltemplate, path_jrxmlresource=None):
-        self._connect.put_post_multipart(self.url, path_xmltemplate, path_jrxmlresource, method='POST', uri=self.uri)
+        else:
+            self._connect.put(self.url, body=rd)
+
+    def modify(self, rd, path_fileresource=None):
+        if path_fileresource:
+            self._connect.put_post_multipart(self.url, rd, path_fileresource, method='POST', uri=self.uri)
+
+        else:
+            self._connect.post(self.url, body=rd)
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         params = urllib.urlencode(
@@ -76,58 +86,110 @@ class Resource (object):
         print urltodelete
         self._connect.delete(urltodelete)
 
-    def build_basicRD(self, resource_name, wsType, isData, isSingle):
+    def build_basicRD(self, resource_name, wsType, hasData, isSingle):
         '''resource_name : the name of the resource
            wsType : type of the resource (see jasper web service documentation)
+           hasData : boolean. True means the resource is a file resource
+           isSingle : boolean. False means the builder is called by another builder.
         '''
         self.resource_name = resource_name
-        self.uri = self.path + self.resource_name
-        self.rd = etree.Element('resourceDescriptor', name=resource_name, uriString=self.uri, wsType=wsType)
-        etree.SubElement(self.rd, 'label').text = resource_name
-        prop_parentElt = etree.SubElement(self.rd, 'resourceProperty', name='PROP_PARENT_FOLDER')
-        etree.SubElement(prop_parentElt, 'value').text = self.path
-        if isData:
-            prop_dataElt = etree.SubElement(self.rd, 'resourceProperty', name='PROP_HAS_DATA')
-            etree.SubElement(prop_dataElt, 'value').text = 'true'
+        if self.isModified:
+            self.uri = self.path
+
+        elif self.path == '/':
+            self.uri = self.path + self.resource_name
+
+        else:
+            self.uri = self.path + '/' + self.resource_name
+
+        self.rd = ResourceDescriptor(name=self.resource_name, wsType=wsType, uriString=self.uri)
+        self.rd.append(Label(self.resource_name))
+        self.rd.append(ResourceProperty('PROP_PARENT_FOLDER', self.path))
+        if hasData:
+            self.rd.append(ResourceProperty('PROP_HAS_DATA', 'true'))
 
         if isSingle:
             simpleRD = etree.tostring(self.rd, pretty_print=True)
-            print simpleRD
             return simpleRD
 
     def build_jdbcRD(self, resource_name, ds_username, ds_password, ds_url, driverClass='org.postgresql.Driver'):
-        self.build_basicRD(resource_name=resource_name, wsType='jdbc', isData=False, isSingle=False)
-        prop_driverClass = etree.SubElement(self.rd, 'resourceProperty', name='PROP_DATASOURCE_DRIVER_CLASS')
-        etree.SubElement(prop_driverClass, 'value').text = driverClass
-        prop_dsusername = etree.SubElement(self.rd, 'resourceProperty', name='PROP_DATASOURCE_USERNAME')
-        etree.SubElement(prop_dsusername, 'value').text = ds_username
-        prop_dspasswd = etree.SubElement(self.rd, 'resourceProperty', name='PROP_DATASOURCE_PASSWORD')
-        etree.SubElement(prop_dspasswd, 'value').text = ds_password
-        prop_dsurl = etree.SubElement(self.rd, 'resourceProperty', name='PROP_DATASOURCE_CONNECTION_URL')
-        etree.SubElement(prop_dsurl, 'value').text = ds_url
+        self.build_basicRD(resource_name=resource_name, wsType='jdbc', hasData=False, isSingle=False)
+        self.rd.append(ResourceProperty('PROP_DATASOURCE_DRIVER_CLASS', driverClass))
+        self.rd.append(ResourceProperty('PROP_DATASOURCE_USERNAME', ds_username))
+        self.rd.append(ResourceProperty('PROP_DATASOURCE_PASSWORD', ds_password))
+        self.rd.append(ResourceProperty('PROP_DATASOURCE_CONNECTION_URL', ds_url))
 
         jdbcRD = etree.tostring(self.rd, pretty_print=True)
-        print jdbcRD
         return jdbcRD
 
-    def build_reportUnitRD(self, resource_name, uri_datasource, uri_jrxml, path_other1=None, path_other2=None):
-        self.build_basicRD(resource_name=resource_name, isData=False, wsType='reportUnit', isSingle=False)
-        rdds = etree.SubElement(self.rd, 'resourceDescriptor', wsType='datasource')
-        prop_refuri = etree.SubElement(rdds, 'resourceProperty', name='PROP_REFERENCE_URI')
-        etree.SubElement(prop_refuri, 'value').text = uri_datasource
-        prop_isref = etree.SubElement(rdds, 'resourceProperty', name='PROP_IS_REFERENCE')
-        etree.SubElement(prop_isref, 'value').text = 'true'
-        etree1 = etree.tostring(rdds, pretty_print=True)
+    def build_reportUnitRD(self, resource_name, uri_datasource, uri_jrxmlfile):
+        self.build_basicRD(resource_name=resource_name, hasData=False, wsType='reportUnit', isSingle=False)
+        self.rd.append(ResourceProperty('PROP_RU_ALWAYS_PROPMT_CONTROLS', 'true'))
+        self.rd.append(ResourceProperty('PROP_RU_CONTROLS_LAYOUT', '1'))
+        rdds = ResourceDescriptor(wsType='datasource')
+        rdds.append(ResourceProperty('PROP_REFERENCE_URI', uri_datasource))
+        rdds.append(ResourceProperty('PROP_IS_REFERENCE', 'true'))
+        self.rd.append(rdds)
 
-        rdjrxml = etree.SubElement(self.rd, 'resourceDescriptor', wsType='jrxml', uriString=uri_jrxml)
-        prop_isref = etree.SubElement(rdjrxml, 'resourceProperty', name='PROP_IS_REFERENCE')
-        etree.SubElement(prop_isref, 'value').text = 'true'
+        rdjrxml = ResourceDescriptor(name=resource_name, wsType='jrxml', uriString=uri_jrxmlfile)
+        rdjrxml.append(ResourceProperty('PROP_IS_REFERENCE', 'true'))
+        rdjrxml.append(ResourceProperty('PROP_REFERENCE_URI', uri_jrxmlfile))
+        rdjrxml.append(ResourceProperty('PROP_RU_IS_MAIN_REPORT', 'true'))
+        self.rd.append(rdjrxml)
 
-        etree2 = etree.tostring(rdjrxml, pretty_print=True)
-
-        reportUnitRD = etree1 + etree1
-
-        print reportUnitRD
+        reportUnitRD = etree.tostring(self.rd, pretty_print=True)
         return reportUnitRD
+
+
+class ResourceReportUnit(object):
+
+    def __init__(self, js_session, path_local_jrxmlresource, path_js_jrxmlresource, path_js_ruresource):
+        self.js_session = js_session
+        self.path_local_jrxmlresource = path_local_jrxmlresource
+        self.path_js_jrxmlresource = path_js_jrxmlresource
+        self.path_js_ruresource = path_js_ruresource
+        self.filesresources = FilesResource(path_local_jrxmlresource, 'jrxml')
+
+    def create_all(self):
+        for filename, filename_ext in self.filesresources.get_statfilename().keys():
+            uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
+            resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
+            resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)
+
+            rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
+            rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
+
+            resource_jrxml.create(rdjrxml, self.path_local_jrxmlresource + filename_ext)
+            resource_reportUnit.create(rdru)
+
+        files.serialize_filestat('stat_filedata')
+
+    def modify_all(self, filename, filename_ext):
+        uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
+        resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource + '/' + filename, isModified=True)
+        resource_reportUnit = Resource(self.js_session, self.path_js_ruresource + '/' + filename, isModified=True)
+        rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
+        rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
+
+        resource_jrxml.modify(rdjrxml, self.path_local_jrxmlresource + filename_ext)
+        resource_reportUnit.modify(rdru)
+
+    def update_all(self):
+        new_files = self.filesresources.get_statfilename()
+        old_files = self.filesresources.load_filestat('stat_filedata')
+        diff_files = filter(lambda a: old_files[a[0]] != a[1], new_files.items())
+        i = 0
+        print new_files
+        print old_files
+        print diff_files
+        for k, k_ext in new_files.keys():
+            if not (k, k_ext) in old_files.keys():
+                self.create_all()
+
+        for (k, k_ext) in diff_files[0]:
+            print 'fichier ', k_ext, ' modifié'
+            self.modify_all(k, k_ext)
+
+        print 'fin'
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
