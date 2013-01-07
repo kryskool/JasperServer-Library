@@ -23,7 +23,7 @@
 
 import urllib
 import httplib2
-import urllib2
+import requests
 from poster.encode import multipart_encode
 from exceptions import JsException, StatusException
 
@@ -50,16 +50,16 @@ class Client(object):
         """
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         headers.update(self.headers)
-        params = urllib.urlencode({
+        params = {
                 'j_username': username,
                 'j_password': password,
-        })
+        }
 
-        response, content = self.http.request(self._rest_url + '/login', 'POST', params, headers=headers)
-        if response.get('status', '500') != '200':
+        response = requests.post(self._rest_url + '/login', params=params, headers=headers)
+        if response.raise_for_status():
             raise JsException('Login Error')
 
-        self.headers['Cookie'] = response.get('set-cookie', False)
+        self.headers['Cookie'] = response.headers['set-cookie']
 
     def get(self, url, content_type='text/plain', params=''):
         """
@@ -67,52 +67,48 @@ class Client(object):
         """
         headers = {'content-type': content_type}
         headers.update(self.headers)
-        if params:
-            url = url + '?%s' % params
-        response, content = self.http.request(url, method="GET", body=params, headers=headers)
-        if response.get('status', '500') in StatusException:
+        response = requests.get(url, params=params, headers=headers)
+        if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return content
+        return response.text
 
-    def put(self, url, content_type='text/plain', body=''):
+    def put(self, url, content_type='text/plain', data=''):
         """
         send a single content
         """
         headers = {'content-type': content_type}
         headers.update(self.headers)
-        response, content = self.http.request(url, method='PUT', body=body, headers=headers)
-        if response.get('status', '500') in StatusException:
+        response = requests.put(url, data=data, headers=headers)
+        if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return (response.get('status'), content)
+        print response.text
+        return response.headers['status'], response.text
 
-    def post(self, url, content_type='text/plain', body=''):
+    def post(self, url, content_type='text/plain', data=''):
         """
         send a single content
         """
         headers = {'content-type': content_type}
         headers.update(self.headers)
-        response, content = self.http.request(self._clean_url(url), method='POST', body=body, headers=headers)
-        print url
-        print response
-        print content
-        if response.get('status', '500') in StatusException:
+        response = requests.post(self._clean_url(url), data=data, headers=headers)
+        if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return (response.get('status'), content)
+        return response.headers['status'], response.text
 
     def delete(self, url):
         headers = {}
         headers.update(self.headers)
-        response, content = self.http.request(self._clean_url(url), method='DELETE', headers=headers)
-        if response.get('status', '500') in StatusException:
+        response = requests.delete(self._clean_url(url), headers=headers)
+        if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return (response.get('status'), content)
+        # return response.header['status'], response.text
 
-    def put_post_multipart(self, url, rd,  path_fileresource,  method, uri):
-        f = open(path_fileresource,'r')
+    def put_post_multipart(self, url, rd, path_fileresource, method, uri):
+        f = open(path_fileresource, 'r')
         values = [
             ('ResourceDescriptor', rd),
             (uri, f)
@@ -130,6 +126,7 @@ class Client(object):
         for k, v in response.items():
             print '    ', k, ':', v
 
+        print content
 
     @staticmethod
     def _clean_url(url):

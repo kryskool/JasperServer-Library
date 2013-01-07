@@ -65,7 +65,7 @@ class Resource (object):
             self._connect.put_post_multipart(self.url, rd, path_fileresource, method='PUT', uri=self.uri)
 
         else:
-            self._connect.put(self.url, body=rd)
+            self._connect.put(self.url, data=rd)
 
     def modify(self, rd, path_fileresource=None):
         if path_fileresource:
@@ -82,8 +82,8 @@ class Resource (object):
         self._connect.get(self.url, 'application/x-www-form-urlencoded', params)
 
     def delete(self, resource_name):
-        urltodelete = self.url + resource_name
-        print urltodelete
+        urltodelete = self.url + '/' + resource_name
+        print 'url a supprimer', urltodelete
         self._connect.delete(urltodelete)
 
     def build_basicRD(self, resource_name, wsType, hasData, isSingle):
@@ -104,6 +104,7 @@ class Resource (object):
 
         self.rd = ResourceDescriptor(name=self.resource_name, wsType=wsType, uriString=self.uri)
         self.rd.append(Label(self.resource_name))
+        self.rd.append(Mtime('12316545646'))
         self.rd.append(ResourceProperty('PROP_PARENT_FOLDER', self.path))
         if hasData:
             self.rd.append(ResourceProperty('PROP_HAS_DATA', 'true'))
@@ -152,19 +153,19 @@ class ResourceReportUnit(object):
 
     def create_all(self):
         for filename, filename_ext in self.filesresources.get_statfilename().keys():
-            uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
-            resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
-            resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)
+            self.create(filename, filename_ext)
 
-            rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
-            rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
+    def create(self, filename, filename_ext):
+        uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
+        resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
+        resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)
 
-            resource_jrxml.create(rdjrxml, self.path_local_jrxmlresource + filename_ext)
-            resource_reportUnit.create(rdru)
+        rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
+        rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
+        resource_jrxml.create(rdjrxml, self.path_local_jrxmlresource + filename_ext)
+        resource_reportUnit.create(rdru)
 
-        files.serialize_filestat('stat_filedata')
-
-    def modify_all(self, filename, filename_ext):
+    def modify(self, filename):
         uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
         resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource + '/' + filename, isModified=True)
         resource_reportUnit = Resource(self.js_session, self.path_js_ruresource + '/' + filename, isModified=True)
@@ -174,22 +175,32 @@ class ResourceReportUnit(object):
         resource_jrxml.modify(rdjrxml, self.path_local_jrxmlresource + filename_ext)
         resource_reportUnit.modify(rdru)
 
+    def delete(self, filename):
+        print 'jesuisdansdeletesync'
+        Resource(self.js_session, self.path_js_ruresource).delete(filename)
+        Resource(self.js_session, self.path_js_jrxmlresource).delete(filename)
+
     def update_all(self):
-        new_files = self.filesresources.get_statfilename()
-        old_files = self.filesresources.load_filestat('stat_filedata')
-        diff_files = filter(lambda a: old_files[a[0]] != a[1], new_files.items())
-        i = 0
-        print new_files
-        print old_files
-        print diff_files
-        for k, k_ext in new_files.keys():
-            if not (k, k_ext) in old_files.keys():
-                self.create_all()
+        try:
+            new_files = self.filesresources.get_statfilename()
+            old_files = self.filesresources.load_filestat('stat_filedata')
+            diff_files = filter(lambda a: old_files[a[0]] != a[1], new_files.items())
+            print diff_files
+            for k, k_ext in new_files.keys():
+                if not (k, k_ext) in old_files.keys():
+                    self.create(k, k_ext)
 
-        for (k, k_ext) in diff_files[0]:
-            print 'fichier ', k_ext, ' modifié'
-            self.modify_all(k, k_ext)
+            for (k, k_ext), mtime in diff_files:
+                print 'fichier ', k_ext, ' modifié'
+                self.modify(k, k_ext)
 
-        print 'fin'
+            for k, k_ext in old_files.keys():
+                if not (k, k_ext) in new_files.keys():
+                    self.delete(k)
+
+        except:
+            self.create_all()
+
+        self.filesresources.serialize_filestat('stat_filedata')
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
