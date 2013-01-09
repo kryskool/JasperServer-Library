@@ -50,10 +50,3 @@ class Value(etree.ElementBase):
 
     def __init__(self, value):
         super(Value, self).__init__(value)
-
-
-class Mtime(etree.ElementBase):
-    TAG = 'description'
-
-    def __init__(self, value):
-        super(Mtime, self).__init__(value)
