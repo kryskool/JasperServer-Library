@@ -84,4 +84,42 @@ Resource service
     
 .. method:: Resource.build_reportUnitRD(resource_name, uri_datasource, uri_jrxmlfile)
 
-    This method build an XML report unit resourceDescriptor. reports units need linked resource. You must have a datasource resource and jrxml r
+    This method build an XML report unit resourceDescriptor. reports units need linked resource. You must have a datasource resource and jrxml resource.
+    
+ 
+Synchronization
+===============
+
+    Synchronization allow update (create, modify, delete) all local JRXML files into JRXML Resource and report unit Resource to JasperServer
+ 
+.. class:: SyncRU(js_session, path_local_jrxmlresource, path_js_jrxmlresource, path_js_ruresource)
+
+    an :class:`SyncRU` instance allow update local Resource with *path_local_jrxmlresource*, Resource JasperServer in the following repository : *path_js_jrxmlresource* and *path_js_ru_resource*
+
+.. method:: SyncRU.update_all()
+
+    This method update each Resource in JasperServer.
+    
+
+Synchronization Example
+_______________________
+
+.. code-block:: python
+
+    import sys
+    from jasperserver.rest import Client
+    from jasperserver.admin import User
+    from jasperserver.services  import *
+    from jasperserver.synchronization import *
+    
+    
+    path_js_jrxmlresource = '/my/jrxml/jasperserver/repository'
+    path_js_reportUnit = '/my/reportUnit/jasperserver/repository'
+    path_local_jrxmlresource = '/my/jrxml/repository/'
+    
+    client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
+    
+    ru = SyncRU(client, path_local_jrxmlresource, path_jrxmlresource, path_reportUnit)
+    ru.update_all()
+
+
