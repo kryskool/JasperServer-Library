@@ -94,7 +94,7 @@ Synchronization
  
 .. class:: SyncRU(js_session, path_local_jrxmlresource, path_js_jrxmlresource, path_js_ruresource)
 
-    an :class:`SyncRU` instance allow update local Resource with *path_local_jrxmlresource*, Resource JasperServer in the following repository : *path_js_jrxmlresource* and *path_js_ru_resource*
+    an :class:`SyncRU` instance allow update local Resource with *path_local_jrxmlresource* to Resource JasperServer in the following repository : *path_js_jrxmlresource* and *path_js_ru_resource*
 
 .. method:: SyncRU.update_all()
 
