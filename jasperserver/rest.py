@@ -67,11 +67,14 @@ class Client(object):
         """
         headers = {'content-type': content_type}
         headers.update(self.headers)
+        print 'avantget'
         response = requests.get(url, params=params, headers=headers)
+        print response.url
+        print 'apresget'
         if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return response.text
+        return response.content
 
     def put(self, url, content_type='text/plain', data=''):
         """
@@ -115,12 +118,12 @@ class Client(object):
         ]
         data, headers = multipart_encode(values)
         data = ''.join(data)
-
         headers.update(self.headers)
         print 'put in this url =', url
         print 'headers ='
         for k, v in headers.items():
             print '    ', k, ':', v
+        print data
         response, content = self.http.request(url, method=method, headers=headers, body=data)
         print 'Reponse ='
         for k, v in response.items():

@@ -66,14 +66,14 @@ class Reportv2(Report):
         self.url = js_connect._rest_url + '_v2/reports' + path + '/'
 
     def run(self, name, output_format, page='', onepagepersheet=''):
+        params = None
         if page:
             params = {'page': page}
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
         print self.url + name + '.' + output_format
-        content = self._connect.get(self.url + name + '.' + output_format, params)
+        content = self._connect.get(self.url + name + '.' + output_format, params=params)
         with open('/tmp/%s.%s' % (name, output_format), 'w') as output_file:
             output_file.write(content)
-
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

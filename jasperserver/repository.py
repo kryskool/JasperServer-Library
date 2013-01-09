@@ -39,12 +39,11 @@ class Resources (object):
         self.url = js_connect._rest_url + '/resources' + path
 
     def search(self, description='', wstype='', recursive='0', item_max='0'):
-        params = urllib.urlencode(
-            {'q': description,
+        params = {'q': description,
              'type': wstype,
              'recursive': recursive,
              'limit': item_max
-        })
+        }
         res_xml = self._connect.get(self.url, 'application/x-www-form-urlencoded', params)
         print 'search resources', description, '=\n', res_xml
 
@@ -75,10 +74,16 @@ class Resource (object):
             self._connect.post(self.url, body=rd)
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
-        params = urllib.urlencode(
-            {'file': resource_name,
-             'IC_GET_QUERY_DATA': uri_datasource,
-        })
+        params = {'file': resource_name}
+        if uri_datasource:
+            params['IC_GET_QUERY_DATA'] = uri_datasource
+
+            if param_p:
+                params['param_p'] = param_p
+
+            if param_pl:
+                params['param_pl'] = param_pl
+
         self._connect.get(self.url, 'application/x-www-form-urlencoded', params)
 
     def delete(self, resource_name):
