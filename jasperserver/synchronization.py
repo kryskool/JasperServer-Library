@@ -42,13 +42,9 @@ class SyncRU(object):
         uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
         resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
         resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)
-        print 'jesuisla'
         rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
-        print 'hello2'
         rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
-        print 'hello'
         resource_jrxml.create(rdjrxml, self.path_local_jrxmlresource + filename_ext)
-        print 'jesuisencorela'
         resource_reportUnit.create(rdru)
 
     def modify(self, filename):

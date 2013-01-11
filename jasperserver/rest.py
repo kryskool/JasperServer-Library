@@ -24,7 +24,6 @@
 import urllib
 import httplib2
 import requests
-from poster.encode import multipart_encode
 from exceptions import JsException, StatusException
 
 
@@ -60,15 +59,16 @@ class Client(object):
             raise JsException('Login Error')
 
         self.headers['Cookie'] = response.headers['set-cookie']
+        print response.headers
 
-    def get(self, url, content_type='text/plain', params=''):
+    def get(self, url, params=''):
         """
         Send a http GET query
         """
-        headers = {'content-type': content_type}
+        headers = {}
         headers.update(self.headers)
         print 'avantget'
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(self._clean_url(url), params=params, headers=headers)
         print response.url
         print 'apresget'
         if response.raise_for_status():
@@ -76,32 +76,44 @@ class Client(object):
 
         return response.content
 
-    def put(self, url, content_type='text/plain', data=''):
+    def put(self, url, data='', files='', uri=''):
         """
-        send a single content
+        Send a content
         """
-        headers = {'content-type': content_type}
+        if files:
+            data = {'ResourceDescriptor' : data }
+            files = {uri : open(files)}
+
+        headers = {}
         headers.update(self.headers)
-        response = requests.put(url, data=data, headers=headers)
+        response = requests.put(self._clean_url(url), data=data, files=files, headers=headers)
+
         if response.raise_for_status():
             raise StatusException[response['status']]()
 
         print response.text
         return response.headers['status'], response.text
 
-    def post(self, url, content_type='text/plain', data=''):
+    def post(self, url, data='', files='', uri=''):
         """
-        send a single content
+        Send a content
         """
-        headers = {'content-type': content_type}
+        if files:
+            data = {'ResourceDescriptor' : data }
+            files = {uri : open(files)}
+
+        headers = {}
         headers.update(self.headers)
-        response = requests.post(self._clean_url(url), data=data, headers=headers)
+        response = requests.post(self._clean_url(url), data=data, files=files, headers=headers)
         if response.raise_for_status():
             raise StatusException[response['status']]()
 
         return response.headers['status'], response.text
 
     def delete(self, url):
+        '''
+        Delete a content
+        '''
         headers = {}
         headers.update(self.headers)
         response = requests.delete(self._clean_url(url), headers=headers)
@@ -109,27 +121,6 @@ class Client(object):
             raise StatusException[response['status']]()
 
         # return response.header['status'], response.text
-
-    def put_post_multipart(self, url, rd, path_fileresource, method, uri):
-        f = open(path_fileresource, 'r')
-        values = [
-            ('ResourceDescriptor', rd),
-            (uri, f)
-        ]
-        data, headers = multipart_encode(values)
-        data = ''.join(data)
-        headers.update(self.headers)
-        print 'put in this url =', url
-        print 'headers ='
-        for k, v in headers.items():
-            print '    ', k, ':', v
-        print data
-        response, content = self.http.request(url, method=method, headers=headers, body=data)
-        print 'Reponse ='
-        for k, v in response.items():
-            print '    ', k, ':', v
-
-        print content
 
     @staticmethod
     def _clean_url(url):

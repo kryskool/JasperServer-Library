@@ -43,7 +43,7 @@ class Resources (object):
              'limit': item_max
         }
         res_xml = self._connect.get(self.url, 'application/x-www-form-urlencoded', params)
-        print 'search resources', description, '=\n', res_xml
+        return res_xml
 
 
 class Resource (object):
@@ -58,18 +58,10 @@ class Resource (object):
         self.uri = ''
 
     def create(self, rd, path_fileresource=None):
-        if path_fileresource:
-            self._connect.put_post_multipart(self.url, rd, path_fileresource, method='PUT', uri=self.uri)
-
-        else:
-            self._connect.put(self.url, data=rd)
+            self._connect.put(self.url, rd, path_fileresource, uri=self.uri)
 
     def modify(self, rd, path_fileresource=None):
-        if path_fileresource:
-            self._connect.put_post_multipart(self.url, rd, path_fileresource, method='POST', uri=self.uri)
-
-        else:
-            self._connect.post(self.url, body=rd)
+            self._connect.post(self.url, rd, path_fileresource, uri=self.uri)
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         params = {'file': resource_name}
