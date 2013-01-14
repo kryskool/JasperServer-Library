@@ -1,6 +1,0 @@
-<resourceDescriptor name="images" wsType="folder" uriString="/images" isNew="false">
- <label>Images</label>
-  <resourceProperty name="PROP_PARENT_FOLDER">
-   <value>/</value>
-  </resourceProperty>
-</resourceDescriptor>
