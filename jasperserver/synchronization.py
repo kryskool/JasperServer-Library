@@ -38,7 +38,6 @@ class SyncRU(object):
             self.create(filename, filename_ext)
 
     def create(self, filename, filename_ext):
-        print 'jerentredanscreate'
         uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
         resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
         resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)

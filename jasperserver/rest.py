@@ -67,14 +67,12 @@ class Client(object):
         """
         headers = {}
         headers.update(self.headers)
-        print 'avantget'
         response = requests.get(self._clean_url(url), params=params, headers=headers)
-        print response.url
-        print 'apresget'
         if response.raise_for_status():
             raise StatusException[response['status']]()
 
-        return response.content
+        print response.content
+        return response.content, response.text
 
     def put(self, url, data='', files='', uri=''):
         """
