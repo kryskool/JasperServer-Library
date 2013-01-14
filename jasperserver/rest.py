@@ -41,7 +41,6 @@ class Client(object):
         self._rest_url = url + '/rest'
         self.http = httplib2.Http()
         self._login(username, password)
-        #pass
 
     def _login(self, username, password):
         """
