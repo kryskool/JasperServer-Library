@@ -56,7 +56,7 @@ class Client(object):
         response = requests.post(self._rest_url + '/login', params=params, headers=headers)
         statuscode = response.status_code
         if statuscode in StatusException:
-            raise StatusException[statuscode]()
+            raise JsException('Logging Error')
 
         self.headers['Cookie'] = response.headers['set-cookie']
         print response.headers
