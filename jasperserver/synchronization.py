@@ -21,64 +21,74 @@
 #
 ##############################################################################
 from services import *
-from fileresourcestat import *
+from fileresourcestat import Stat
 
 
-class SyncRU(object):
+class SyncResources(object):
 
-    def __init__(self, js_session, path_local_jrxmlresource, path_js_jrxmlresource, path_js_ruresource):
+    def __init__(self, js_session):
         self.js_session = js_session
-        self.path_local_jrxmlresource = path_local_jrxmlresource
-        self.path_js_jrxmlresource = path_js_jrxmlresource
-        self.path_js_ruresource = path_js_ruresource
-        self.filesresources = FilesResource(path_local_jrxmlresource, 'jrxml')
 
-    def create_all(self):
-        for filename, filename_ext in self.filesresources.get_statfilename().keys():
-            self.create(filename, filename_ext)
+    def update_mainreports(self, path_oerp_mainjrxml, path_js_mainjrxml='/openerp/reports', path_js_ruresource='/openerp/bases/openerp_demo'):
+        '''
+        Update main reports (jrxml and report units)
+        '''
+        statmainjrxml = Stat(path_oerp_mainjrxml, 'main_stats')
+        cur_stats = statmainjrxml.get_stat()
+        mainjrxml = Resource(self.js_session, path_js_mainjrxml)
+        ru = Resource(self.js_session, path_js_ruresource)
 
-    def create(self, filename, filename_ext):
-        uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
-        resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource, isModified=False)
-        resource_reportUnit = Resource(self.js_session, self.path_js_ruresource, isModified=False)
-        rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
-        rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
-        resource_jrxml.create(rdjrxml, self.path_local_jrxmlresource + filename_ext)
-        resource_reportUnit.create(rdru)
-
-    def modify(self, filename):
-        uri_jrxmlfile = self.path_js_jrxmlresource + '/' + filename
-        resource_jrxml = Resource(self.js_session, self.path_js_jrxmlresource + '/' + filename, isModified=True)
-        resource_reportUnit = Resource(self.js_session, self.path_js_ruresource + '/' + filename, isModified=True)
-        rdjrxml = resource_jrxml.build_basicRD(filename, 'jrxml', hasData=True, isSingle=True)
-        rdru = resource_reportUnit.build_reportUnitRD(filename, '/datasources/openerp_demo', uri_jrxmlfile)
-
-        resource_jrxml.modify(rdjrxml, self.path_local_jrxmlresource + filename_ext)
-        resource_reportUnit.modify(rdru)
-
-    def delete(self, filename):
-        Resource(self.js_session, self.path_js_ruresource).delete(filename)
-        Resource(self.js_session, self.path_js_jrxmlresource).delete(filename)
-
-    def update_all(self):
         try:
-            new_files = self.filesresources.get_statfilename()
-            old_files = self.filesresources.load_filestat('stat_filedata')
-            diff_files = filter(lambda a: old_files[a[0]] != a[1], new_files.items())
-            print diff_files
-            for k, k_ext in new_files.keys():
-                if not (k, k_ext) in old_files.keys():
-                    self.create(k, k_ext)
+            sav_stats = statmainjrxml.load_stat()
+            diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
+            print diff_stats
+            for k, k_ext in cur_stats.keys():
+                if not (k, k_ext) in sav_stats.keys():
+                    mainjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
+                    print 'jaiterminercreatejrxml'
+                    ru.create(resource_name=k, wsType='reportUnit')
 
-            for (k, k_ext), mtime in diff_files:
+            for (k, k_ext), mtime in diff_stats:
                 print 'fichier ', k_ext, ' modifié'
-                self.modify(k, k_ext)
+                mainjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
+                ru.modify(resource_name=k, wsType='reportUnit')
 
-            for k, k_ext in old_files.keys():
-                if not (k, k_ext) in new_files.keys():
-                    self.delete(k)
+            for k, k_ext in sav_stats.keys():
+                if not (k, k_ext) in cur_stats.keys():
+                    ru.delete(k)
+                    mainjrxml.delete(k)
 
         except:
-            self.create_all()
+            for k, k_ext in cur_stats.keys():
+                mainjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
+                ru.create(resource_name=k, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml + '/' + k)
 
-        self.filesresources.serialize_filestat('stat_filedata')
+        statmainjrxml.serialize_stat()
+
+    def update_subreports(self, path_oerp_subjrxml, path_js_subjrxml='/openerp/subreports'):
+        statsubjrxml = Stat(path_oerp_subjrxml, 'sub_stats')
+        try:
+            sav_stats = statsubjrxml.load_stat()
+
+        except:
+            sav_stats = statsubjrxml.newflatfile()
+
+        cur_stats = statsubjrxml.get_stat()
+        diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
+        print diff_stats
+        subjrxml = Resource(self.js_session, path_js_subjrxml)
+        for k, k_ext in cur_stats.keys():
+            if not (k, k_ext) in sav_stats.keys():
+                subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml)
+
+            for (k, k_ext), mtime in diff_stats:
+                print 'fichier ', k_ext, ' modifié'
+                subjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml)
+
+            for k, k_ext in sav_stats.keys():
+                if not (k, k_ext) in cur_stats.keys():
+                    subjrxml.delete(k)
+
+        statsubjrxml.serialize_stat()
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

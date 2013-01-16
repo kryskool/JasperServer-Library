@@ -26,28 +26,31 @@ import glob
 import pickle
 
 
-class FilesResource(object):
+class Stat(object):
 
-    def __init__(self, path_src, ext):
+    def __init__(self, path_src, flatfile):
         os.chdir(path_src)
-        self.ext = '*' + ext
-        self.statfilename = {}
+        self.flatfile = flatfile
+        self.stats = {}
 
-    def get_statfilename(self):
-        for filename_ext in glob.glob(self.ext):
+    def newflatfile(self):
+        with open(self.flatfile, 'w') as f:
+            f.close
+
+    def get_stat(self, ext='*.jrxml'):
+        for filename_ext in glob.glob(ext):
             filename, _ext = os.path.splitext(filename_ext)
             mtime = os.stat(filename_ext).st_mtime
-            self.statfilename[filename, filename_ext] = mtime
+            self.stats[filename, filename_ext] = mtime
 
-        return self.statfilename
+        return self.stats
 
-    def serialize_filestat(self, txt_file):
-        with open(txt_file, 'w') as f:
-            pickle.dump(self.statfilename, f)
-            f.close()
+    def serialize_stat(self):
+        with open(self.flatfile, 'w') as f:
+            pickle.dump(self.stats, f)
 
-    def load_filestat(self, txt_file):
-        with open(txt_file, 'r') as f:
+    def load_stat(self):
+        with open(self.flatfile, 'r') as f:
             stat = pickle.load(f)
 
         return stat
