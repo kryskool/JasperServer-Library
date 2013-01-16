@@ -21,6 +21,7 @@
 #
 ##############################################################################
 
+
 class JsException(Exception):
     """
     Global error for JasperQuery
@@ -34,6 +35,8 @@ class JsException(Exception):
 ###
 ## Error start with 4XX
 ##
+
+
 class BadRequest(JsException):
     """
     Error 400
@@ -48,6 +51,7 @@ class Unauthorized(JsException):
     """
     def __init__(self, value='Bad Request'):
         self.value = value
+
 
 class Forbidden(JsException):
     """
@@ -69,10 +73,10 @@ class NotFound(JsException):
 # if status in StatusException:
 #    raise StatusException[status]()
 StatusException = {
-    '400': BadRequest,
-    '401': Unauthorized,
-    '403': Forbidden,
-    '404': NotFound,
+    400: BadRequest,
+    401: Unauthorized,
+    403: Forbidden,
+    404: NotFound,
 }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

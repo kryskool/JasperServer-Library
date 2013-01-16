@@ -54,8 +54,9 @@ class Client(object):
         }
 
         response = requests.post(self._rest_url + '/login', params=params, headers=headers)
-        if response.raise_for_status():
-            raise JsException('Login Error')
+        statuscode = response.status_code
+        if statuscode in StatusException:
+            raise StatusException[statuscode]()
 
         self.headers['Cookie'] = response.headers['set-cookie']
         print response.headers
@@ -67,8 +68,9 @@ class Client(object):
         headers = {}
         headers.update(self.headers)
         response = requests.get(self._clean_url(url), params=params, headers=headers)
-        if response.status_code in StatusException:
-            raise StatusException[response.status_code]
+        statuscode = response.status_code
+        if statuscode in StatusException:
+            raise StatusException[statuscode]()
 
         return response.content, response.text
 
@@ -83,8 +85,7 @@ class Client(object):
             files = {uri: open(files)}
 
         response = requests.put(self._clean_url(url), data=data, files=files, headers=headers)
-        statuscode = str(response.status_code)
-        print statuscode
+        statuscode = response.status_code
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
@@ -101,7 +102,8 @@ class Client(object):
         headers = {}
         headers.update(self.headers)
         response = requests.post(self._clean_url(url), data=data, files=files, headers=headers)
-        statuscode = str(response.status_code)
+        statuscode = response.status_code
+
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
@@ -114,10 +116,11 @@ class Client(object):
         headers = {}
         headers.update(self.headers)
         response = requests.delete(self._clean_url(url), headers=headers)
-        if response.raise_for_status():
-            raise StatusException[response['status']]()
+        statuscode = response.status_code
+        if statuscode in StatusException:
+            raise StatusException[statuscode]()
 
-        # return response.header['status'], response.text
+        return response.header['status'], response.text
 
     @staticmethod
     def _clean_url(url):
