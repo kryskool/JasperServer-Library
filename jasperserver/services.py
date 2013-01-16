@@ -52,19 +52,18 @@ class Resources (object):
 
 class Resource (object):
 
-    def __init__(self, js_connect, path='/'):
+    def __init__(self, js_connect, path=''):
         self._connect = js_connect
         self.path = path
-        self.url = js_connect._rest_url + '/resource/' + path
+        self.url = js_connect._rest_url + '/resource/'
 
-    def create(self, resource_name, wsType, path_fileresource=None,
-               uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='/openerp/reports',
+    def create(self, resource_name, wsType, path_fileresource='',
+               uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                jdbc_username='', jdbc_password='', jdbc_url='', jdbc_driver='org.postgresql.Driver'):
         '''
         Create a simple resource or a resource with an attached file
         '''
-        hasData=False
-        print 'jerentredanscreat'
+        hasData = False
         if path_fileresource:
             hasData = True
 
@@ -72,12 +71,12 @@ class Resource (object):
                                            uri_datasource=uri_datasource, uri_jrxmlfile=uri_jrxmlfile,
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
-        print rd, uri
-
+        print rd
+        self.url = self.url + self.path
         self._connect.put(self.url, data=rd, files=path_fileresource, uri=uri)
 
     def modify(self, resource_name, wsType, path_fileresource=None,
-               uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='/openerp/reports',
+               uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                jdbc_username='', jdbc_password='', jdbc_url='', jdbc_driver='org.postgresql.Driver'):
         '''
         Modify a simple resource or a resource with an attached file
@@ -85,13 +84,14 @@ class Resource (object):
         if path_fileresource:
             hasData = True
 
-        rd, uri = self.build_resourceDescriptor(resource_name=resource_name, wsType=wsType, hasData=hasData, isModified=True,
+        rd, uri = self.build_resourceDescriptor(resource_name=resource_name, wsType=wsType, hasData=hasData,
                                            uri_datasource=uri_datasource, uri_jrxmlfile=uri_jrxmlfile,
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
-
-        print rd, uri
+        self.url = self.url + uri
+        print rd, self.url
         self._connect.post(self.url, data=rd, files=path_fileresource, uri=uri)
+        print 'create termine'
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         '''
@@ -113,11 +113,11 @@ class Resource (object):
         '''
         Delete a resource in the current path
         '''
-        urltodelete = self.url + '/' + resource_name
+        urltodelete = self.url + self.path + '/' + resource_name
         self._connect.delete(urltodelete)
 
-    def build_resourceDescriptor(self, resource_name, wsType, hasData, isModified=False,
-                                 uri_datasource='', uri_jrxmlfile='',
+    def build_resourceDescriptor(self, resource_name, wsType, hasData=False,
+                                 uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                                  jdbc_username='', jdbc_password='', jdbc_url='',
                                  jdbc_driver='org.postgresql.Driver'):
         '''
@@ -125,16 +125,8 @@ class Resource (object):
         resource_name : the name of the resource
         wsType : type of the resource (see jasper web service documentation)
         hasData : boolean. True means the resource is a file resource
-        isSingle : boolean. False means the builder is called by another builder.
         '''
-        if isModified:
-            uri = self.path
-
-        elif self.path == '/':
-            uri = self.path + resource_name
-
-        else:
-            uri = self.path + '/' + resource_name
+        uri = self.path + '/' + resource_name
 
         rd = ResourceDescriptor(name=resource_name, wsType=wsType, uriString=uri)
         rd.append(Label(resource_name))
@@ -149,7 +141,7 @@ class Resource (object):
             rdds.append(ResourceProperty('PROP_REFERENCE_URI', uri_datasource))
             rdds.append(ResourceProperty('PROP_IS_REFERENCE', 'true'))
             rd.append(rdds)
-            rdjrxml = ResourceDescriptor(name=resource_name, wsType='jrxml', uriString=uri_jrxmlfile)
+            rdjrxml = ResourceDescriptor(name=resource_name, wsType='jrxml')
             rdjrxml.append(ResourceProperty('PROP_IS_REFERENCE', 'true'))
             rdjrxml.append(ResourceProperty('PROP_REFERENCE_URI', uri_jrxmlfile))
             rdjrxml.append(ResourceProperty('PROP_RU_IS_MAIN_REPORT', 'true'))
