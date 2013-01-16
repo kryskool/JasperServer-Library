@@ -67,28 +67,27 @@ class Client(object):
         headers = {}
         headers.update(self.headers)
         response = requests.get(self._clean_url(url), params=params, headers=headers)
-        if response.raise_for_status():
-            raise StatusException[response['status']]()
+        if response.status_code in StatusException:
+            raise StatusException[response.status_code]
 
-        print response.content
         return response.content, response.text
 
     def put(self, url, data='', files='', uri=''):
         """
         Send a content
         """
-        if files:
-            data = {'ResourceDescriptor' : data }
-            files = {uri : open(files)}
-
         headers = {}
         headers.update(self.headers)
+        if files:
+            data = {'ResourceDescriptor': data}
+            files = {uri: open(files)}
+
         response = requests.put(self._clean_url(url), data=data, files=files, headers=headers)
+        statuscode = str(response.status_code)
+        print statuscode
+        if statuscode in StatusException:
+            raise StatusException[statuscode]()
 
-        if response.raise_for_status():
-            raise StatusException[response['status']]()
-
-        print response.text
         return response.headers['status'], response.text
 
     def post(self, url, data='', files='', uri=''):
@@ -96,14 +95,15 @@ class Client(object):
         Send a content
         """
         if files:
-            data = {'ResourceDescriptor' : data }
-            files = {uri : open(files)}
+            data = {'ResourceDescriptor': data}
+            files = {uri: open(files)}
 
         headers = {}
         headers.update(self.headers)
         response = requests.post(self._clean_url(url), data=data, files=files, headers=headers)
-        if response.raise_for_status():
-            raise StatusException[response['status']]()
+        statuscode = str(response.status_code)
+        if statuscode in StatusException:
+            raise StatusException[statuscode]()
 
         return response.headers['status'], response.text
 
