@@ -59,7 +59,6 @@ class Client(object):
             raise JsException('Logging Error')
 
         self.headers['Cookie'] = response.headers['set-cookie']
-        print response.headers
 
     def get(self, url, params=''):
         """
@@ -103,7 +102,6 @@ class Client(object):
         headers.update(self.headers)
         response = requests.post(self._clean_url(url), data=data, files=files, headers=headers)
         statuscode = response.status_code
-
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
@@ -120,7 +118,8 @@ class Client(object):
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
-        return response.header['status'], response.text
+        print response.headers['status'], response.text
+        return response.headers['status'], response.text
 
     @staticmethod
     def _clean_url(url):
