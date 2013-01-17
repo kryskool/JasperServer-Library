@@ -34,18 +34,17 @@ class SyncResources(object):
         Update main reports (jrxml and report units)
         '''
         statmainjrxml = Stat(path_oerp_mainjrxml, 'main_stats')
-        cur_stats = statmainjrxml.get_stat()
         mainjrxml = Resource(self.js_session, path_js_mainjrxml)
         ru = Resource(self.js_session, path_js_ruresource)
+        diff_stats = ''
 
         try:
-            sav_stats = statmainjrxml.load_stat()
+            sav_stats, cur_stats = statmainjrxml.get_stat()
             diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
             print diff_stats
             for k, k_ext in cur_stats.keys():
                 if not (k, k_ext) in sav_stats.keys():
                     mainjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
-                    print 'jaiterminercreatejrxml'
                     ru.create(resource_name=k, wsType='reportUnit')
 
             for (k, k_ext), mtime in diff_stats:
@@ -66,28 +65,33 @@ class SyncResources(object):
         statmainjrxml.serialize_stat()
 
     def update_subreports(self, path_oerp_subjrxml, path_js_subjrxml='/openerp/subreports'):
+        '''
+        Update subreports (jrxml only)
+        '''
         statsubjrxml = Stat(path_oerp_subjrxml, 'sub_stats')
+        cur_stats = statsubjrxml.get_stat()
+        subjrxml = Resource(self.js_session, path_js_subjrxml)
+
         try:
             sav_stats = statsubjrxml.load_stat()
-
-        except:
-            sav_stats = statsubjrxml.newflatfile()
-
-        cur_stats = statsubjrxml.get_stat()
-        diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
-        print diff_stats
-        subjrxml = Resource(self.js_session, path_js_subjrxml)
-        for k, k_ext in cur_stats.keys():
-            if not (k, k_ext) in sav_stats.keys():
-                subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml)
+            diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
+            print diff_stats
+            for k, k_ext in cur_stats.keys():
+                if not (k, k_ext) in sav_stats.keys():
+                    subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + k_ext)
 
             for (k, k_ext), mtime in diff_stats:
                 print 'fichier ', k_ext, ' modifié'
-                subjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml)
+                subjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + k_ext)
 
             for k, k_ext in sav_stats.keys():
                 if not (k, k_ext) in cur_stats.keys():
                     subjrxml.delete(k)
+
+        except:
+            for k, k_ext in cur_stats.keys():
+                print 'jerentredanssubexcept'
+                subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + '/'+ k_ext)
 
         statsubjrxml.serialize_stat()
 
