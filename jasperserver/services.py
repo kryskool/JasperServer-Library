@@ -71,7 +71,6 @@ class Resource (object):
                                            uri_datasource=uri_datasource, uri_jrxmlfile=uri_jrxmlfile,
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
-        print rd
         self.url = self.url + self.path
         self._connect.put(self.url, data=rd, files=path_fileresource, uri=uri)
 
@@ -89,9 +88,7 @@ class Resource (object):
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
         self.url = self.url + uri
-        print rd, self.url
         self._connect.post(self.url, data=rd, files=path_fileresource, uri=uri)
-        print 'create termine'
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         '''
