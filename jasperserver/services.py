@@ -21,12 +21,13 @@
 #
 ##############################################################################
 from resourcedescriptor import *
+from StringIO import StringIO
 
 
 try:
     from lxml import etree
 except ImportError:
-    import xml.etree.cElementTree as etree
+    import xml.etree.ElementTree as etree
 
 
 class Resources (object):
@@ -46,8 +47,14 @@ class Resources (object):
              'recursive': recursive,
              'limit': item_max
         }
-        res_xml = self._connect.get(self.url, params=params)
-        return res_xml
+        content, xml = self._connect.get(self.url, params=params)
+        res = []
+        if xml:
+            tree = etree.XML(xml)
+            for name in tree.findall('resourceDescriptor'):
+                res.append(name.get('name'))
+
+        return res
 
 
 class Resource (object):
@@ -63,6 +70,7 @@ class Resource (object):
         '''
         Create a simple resource or a resource with an attached file
         '''
+        url = ''
         hasData = False
         if path_fileresource:
             hasData = True
@@ -71,8 +79,8 @@ class Resource (object):
                                            uri_datasource=uri_datasource, uri_jrxmlfile=uri_jrxmlfile,
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
-        self.url = self.url + self.path
-        self._connect.put(self.url, data=rd, files=path_fileresource, uri=uri)
+        url = self.url + self.path
+        self._connect.put(url, data=rd, files=path_fileresource, uri=uri)
 
     def modify(self, resource_name, wsType, path_fileresource=None,
                uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
@@ -80,6 +88,8 @@ class Resource (object):
         '''
         Modify a simple resource or a resource with an attached file
         '''
+        url = ''
+        hasData = False
         if path_fileresource:
             hasData = True
 
@@ -87,8 +97,9 @@ class Resource (object):
                                            uri_datasource=uri_datasource, uri_jrxmlfile=uri_jrxmlfile,
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
-        self.url = self.url + uri
-        self._connect.post(self.url, data=rd, files=path_fileresource, uri=uri)
+
+        url = self.url + uri
+        self._connect.post(url, data=rd, files=path_fileresource, uri=uri)
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         '''
@@ -140,7 +151,7 @@ class Resource (object):
             rd.append(rdds)
             rdjrxml = ResourceDescriptor(name=resource_name, wsType='jrxml')
             rdjrxml.append(ResourceProperty('PROP_IS_REFERENCE', 'true'))
-            rdjrxml.append(ResourceProperty('PROP_REFERENCE_URI', uri_jrxmlfile))
+            rdjrxml.append(ResourceProperty('PROP_REFERENCE_URI', uri_jrxmlfile + '/' + resource_name ))
             rdjrxml.append(ResourceProperty('PROP_RU_IS_MAIN_REPORT', 'true'))
             rd.append(rdjrxml)
 
@@ -170,8 +181,8 @@ class Report(object):
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
         print self.url + name + '.' + output_format
-        response = self._connect.get(self.url + name + '.' + output_format, params=params)
-        return response.content
+        content, text = self._connect.get(self.url + name + '.' + output_format, params=params)
+        return content, text
         # with open('/tmp/%s.%s' % (name, output_format), 'w') as output_file:
         #    output_file.write(content)
 
