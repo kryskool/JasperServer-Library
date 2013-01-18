@@ -21,7 +21,8 @@
 #
 ##############################################################################
 from services import *
-from fileresourcestat import Stat
+import glob
+import os.path
 
 
 class SyncResources(object):
@@ -29,70 +30,61 @@ class SyncResources(object):
     def __init__(self, js_session):
         self.js_session = js_session
 
+    def oerp_res(self, path, ext='*.jrxml'):
+        list_oerp = []
+        os.chdir(path)
+        for filename_ext in glob.glob(ext):
+            filename, _ext = os.path.splitext(filename_ext)
+            list_oerp.append(filename)
+
+        return list_oerp
+
     def update_mainreports(self, path_oerp_mainjrxml, path_js_mainjrxml='/openerp/reports', path_js_ruresource='/openerp/bases/openerp_demo'):
         '''
         Update main reports (jrxml and report units)
         '''
-        statmainjrxml = Stat(path_oerp_mainjrxml, 'main_stats')
         mainjrxml = Resource(self.js_session, path_js_mainjrxml)
         ru = Resource(self.js_session, path_js_ruresource)
-        diff_stats = ''
+        listjs = Resources(self.js_session, path_js_ruresource).search()
+        listjsjrxml = Resources(self.js_session, path_js_mainjrxml).search()
+        listoerp = self.oerp_res(path_oerp_mainjrxml)
 
-        try:
-            sav_stats, cur_stats = statmainjrxml.get_stat()
-            diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
-            print diff_stats
-            for k, k_ext in cur_stats.keys():
-                if not (k, k_ext) in sav_stats.keys():
-                    mainjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
-                    ru.create(resource_name=k, wsType='reportUnit')
+        # look for resource in js but not in path oerp
+        for resource in set(listjs).difference(listoerp):
+            print resource
+            ru.delete(resource)
+            mainjrxml.delete(resource)
 
-            for (k, k_ext), mtime in diff_stats:
-                print 'fichier ', k_ext, ' modifié'
-                mainjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
-                ru.modify(resource_name=k, wsType='reportUnit')
+        # look for modification
+        for resource in set(listjs).intersection(listoerp):
+            mainjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + resource + '.jrxml')
+            ru.modify(resource_name=resource, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml)
 
-            for k, k_ext in sav_stats.keys():
-                if not (k, k_ext) in cur_stats.keys():
-                    ru.delete(k)
-                    mainjrxml.delete(k)
+        # look for resource to add in js
+        for resource in set(listoerp).difference(listjs):
+            if resource in set(listoerp).difference(listjsjrxml):
+                mainjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + resource + '.jrxml')
 
-        except:
-            for k, k_ext in cur_stats.keys():
-                mainjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + k_ext)
-                ru.create(resource_name=k, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml + '/' + k)
-
-        statmainjrxml.serialize_stat()
+            ru.create(resource_name=resource, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml)
 
     def update_subreports(self, path_oerp_subjrxml, path_js_subjrxml='/openerp/subreports'):
         '''
         Update subreports (jrxml only)
         '''
-        statsubjrxml = Stat(path_oerp_subjrxml, 'sub_stats')
-        cur_stats = statsubjrxml.get_stat()
         subjrxml = Resource(self.js_session, path_js_subjrxml)
+        listjssubjrxml = Resources(self.js_session, path_js_subjrxml).search()
+        listoerpsub = self.oerp_res(path_oerp_subjrxml)
 
-        try:
-            sav_stats = statsubjrxml.load_stat()
-            diff_stats = filter(lambda a: sav_stats[a[0]] != a[1], cur_stats.items())
-            print diff_stats
-            for k, k_ext in cur_stats.keys():
-                if not (k, k_ext) in sav_stats.keys():
-                    subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + k_ext)
+        # look for resource in js but not in path oerp
+        for resource in set(listjssubjrxml).difference(listoerpsub):
+            subjrxml.delete(resource)
 
-            for (k, k_ext), mtime in diff_stats:
-                print 'fichier ', k_ext, ' modifié'
-                subjrxml.modify(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + k_ext)
+        # look for modification
+        for resource in set(listjssubjrxml).intersection(listoerpsub):
+            subjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_subjrxml + resource + '.jrxml')
 
-            for k, k_ext in sav_stats.keys():
-                if not (k, k_ext) in cur_stats.keys():
-                    subjrxml.delete(k)
-
-        except:
-            for k, k_ext in cur_stats.keys():
-                print 'jerentredanssubexcept'
-                subjrxml.create(resource_name=k, wsType='jrxml', path_fileresource=path_oerp_subjrxml + '/'+ k_ext)
-
-        statsubjrxml.serialize_stat()
+        # look for resource to add in js
+        for resource in set(listoerpsub).difference(listjssubjrxml):
+            subjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_subjrxml + resource + '.jrxml')
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
