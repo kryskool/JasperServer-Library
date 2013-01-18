@@ -22,7 +22,6 @@
 ##############################################################################
 
 import urllib
-import httplib2
 import requests
 from exceptions import JsException, StatusException
 
@@ -39,7 +38,6 @@ class Client(object):
     def __init__(self, url, username='jasperadmin', password='jasperadmin'):
         self._url = url
         self._rest_url = url + '/rest'
-        self.http = httplib2.Http()
         self._login(username, password)
 
     def _login(self, username, password):
