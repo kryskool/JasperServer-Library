@@ -7,7 +7,7 @@ JasperServer Library use REST protocol to communicate with JasperServer for repo
 This module defines classes which implement the HTTP methods (PUT, POST, DELETE, GET) and allow use basic services in JasperServer.
 
 .. note::
-   this module needs :mod:`poster` and :mod:`requests` library.
+   this module needs :mod:`requests` library.
 
 
 Exemple:
@@ -16,7 +16,7 @@ Exemple:
 
     import sys
     from jasperserver import Client
-    from jasperserver.admin import User
+    from jasperserver.services import Resources
     from jasperserver.exceptions import JsException
 
     try:
@@ -27,8 +27,8 @@ Exemple:
 
     try:
         # Must return a list with one record
-        print User(client).get('joe')
+        print Resources(client).search()
     except JsException:
-        print 'Error when send user query'
+        print 'Error when send search query'
         sys.exit(2)
 
