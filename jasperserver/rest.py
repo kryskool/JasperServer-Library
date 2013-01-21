@@ -29,8 +29,8 @@ from exceptions import JsException, StatusException
 class Client(object):
     """
     Create a REST connection, with authentification
+    This class implements Login service in JasperServer using the session cookie and the RESTful interface.
     """
-    http = None
     headers = {
        'User-Agent': 'JasperServer-Python',
     }
@@ -41,9 +41,7 @@ class Client(object):
         self._login(username, password)
 
     def _login(self, username, password):
-        """
-        Send POST authentification and retrieve the cookie
-        """
+        # Send POST authentification and retrieve the cookie
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         headers.update(self.headers)
         params = {
@@ -59,9 +57,7 @@ class Client(object):
         self.headers['Cookie'] = response.headers['set-cookie']
 
     def get(self, url, params=''):
-        """
-        Send a http GET query
-        """
+        # Send a http GET query
         headers = {}
         headers.update(self.headers)
         response = requests.get(self._clean_url(url), params=params, headers=headers)
@@ -72,9 +68,7 @@ class Client(object):
         return response.content, response.text
 
     def put(self, url, data='', files='', uri=''):
-        """
-        Send a content
-        """
+        # Send a single or multipart content
         headers = {}
         headers.update(self.headers)
         if files:
@@ -89,9 +83,7 @@ class Client(object):
         return response.headers['status'], response.text
 
     def post(self, url, data='', files='', uri=''):
-        """
-        Send a content
-        """
+        # Send a single or multipart content
         if files:
             data = {'ResourceDescriptor': data}
             files = {uri: open(files)}
@@ -106,9 +98,7 @@ class Client(object):
         return response.headers['status'], response.text
 
     def delete(self, url):
-        '''
-        Delete a content
-        '''
+        # Delete a content
         headers = {}
         headers.update(self.headers)
         response = requests.delete(self._clean_url(url), headers=headers)
