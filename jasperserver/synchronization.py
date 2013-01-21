@@ -26,65 +26,72 @@ import os.path
 
 
 class SyncResources(object):
+    '''
+    a SyncResources class instance allow update local Resource to Resource JasperServer. You need an authentified client *js_connect*.
+    '''
 
     def __init__(self, js_session):
         self.js_session = js_session
 
-    def oerp_res(self, path, ext='*.jrxml'):
-        list_oerp = []
+    def src_res(self, path, ext='*.jrxml'):
+        # Return a list of files resource name in source path
+        list_src = []
         os.chdir(path)
         for filename_ext in glob.glob(ext):
             filename, _ext = os.path.splitext(filename_ext)
-            list_oerp.append(filename)
+            list_src.append(filename)
 
-        return list_oerp
+        return list_src
 
-    def update_mainreports(self, path_oerp_mainjrxml, path_js_mainjrxml='/openerp/reports', path_js_ruresource='/openerp/bases/openerp_demo'):
+    def update_mainreports(self, path_src_mainjrxml, path_js_mainjrxml='/openerp/reports', path_js_ruresource='/openerp/bases/openerp_demo'):
         '''
         Update main reports (jrxml and report units)
+        This method allows update local Resource with *path_src_jrxmlresource* to Resource JasperServer in the following repository :
+        *path_js_jrxmlresource* and *path_js_ru_resource*.
         '''
         mainjrxml = Resource(self.js_session, path_js_mainjrxml)
         ru = Resource(self.js_session, path_js_ruresource)
         listjs = Resources(self.js_session, path_js_ruresource).search()
         listjsjrxml = Resources(self.js_session, path_js_mainjrxml).search()
-        listoerp = self.oerp_res(path_oerp_mainjrxml)
+        listsrc = self.src_res(path_src_mainjrxml)
 
         # look for resource in js but not in path oerp
-        for resource in set(listjs).difference(listoerp):
+        for resource in set(listjs).difference(listsrc):
             print resource
             ru.delete(resource)
             mainjrxml.delete(resource)
 
         # look for modification
-        for resource in set(listjs).intersection(listoerp):
-            mainjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + resource + '.jrxml')
+        for resource in set(listjs).intersection(listsrc):
+            mainjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_src_mainjrxml + resource + '.jrxml')
             ru.modify(resource_name=resource, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml)
 
         # look for resource to add in js
-        for resource in set(listoerp).difference(listjs):
-            if resource in set(listoerp).difference(listjsjrxml):
-                mainjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_mainjrxml + resource + '.jrxml')
+        for resource in set(listsrc).difference(listjs):
+            if resource in set(listsrc).difference(listjsjrxml):
+                mainjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_src_mainjrxml + resource + '.jrxml')
 
             ru.create(resource_name=resource, wsType='reportUnit', uri_jrxmlfile=path_js_mainjrxml)
 
-    def update_subreports(self, path_oerp_subjrxml, path_js_subjrxml='/openerp/subreports'):
+    def update_subreports(self, path_src_subjrxml, path_js_subjrxml='/openerp/subreports'):
         '''
         Update subreports (jrxml only)
+        This method allows update local Resource with *path_src_subjrxml* to Resource JasperServer in *path_js_subjrxml*
         '''
         subjrxml = Resource(self.js_session, path_js_subjrxml)
         listjssubjrxml = Resources(self.js_session, path_js_subjrxml).search()
-        listoerpsub = self.oerp_res(path_oerp_subjrxml)
+        listsrcsub = self.src_res(path_src_subjrxml)
 
         # look for resource in js but not in path oerp
-        for resource in set(listjssubjrxml).difference(listoerpsub):
+        for resource in set(listjssubjrxml).difference(listsrcsub):
             subjrxml.delete(resource)
 
         # look for modification
-        for resource in set(listjssubjrxml).intersection(listoerpsub):
-            subjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_subjrxml + resource + '.jrxml')
+        for resource in set(listjssubjrxml).intersection(listsrcsub):
+            subjrxml.modify(resource_name=resource, wsType='jrxml', path_fileresource=path_src_subjrxml + resource + '.jrxml')
 
         # look for resource to add in js
-        for resource in set(listoerpsub).difference(listjssubjrxml):
-            subjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_oerp_subjrxml + resource + '.jrxml')
+        for resource in set(listsrcsub).difference(listjssubjrxml):
+            subjrxml.create(resource_name=resource, wsType='jrxml', path_fileresource=path_src_subjrxml + resource + '.jrxml')
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
