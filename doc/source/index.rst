@@ -1,9 +1,9 @@
-.. JasperServer Library documentation master file, created by
-   sphinx-quickstart on Mon Oct 29 21:55:28 2012.
+.. JasperServer-Library documentation master file, created by
+   sphinx-quickstart on Fri Jan 18 14:26:06 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to JasperServer Library's documentation!
+Welcome to JasperServer-Library's documentation!
 ================================================
 
 Contents:
@@ -13,8 +13,6 @@ Contents:
 
    overview.rst
    content.rst
-   
- 
 
 
 
