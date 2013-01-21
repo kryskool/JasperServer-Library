@@ -21,7 +21,6 @@
 #
 ##############################################################################
 from resourcedescriptor import *
-from StringIO import StringIO
 
 
 try:
@@ -31,6 +30,12 @@ except ImportError:
 
 
 class Resources (object):
+    '''
+    an Resources instance implements resources service in JasperServer. You need an open session js_connect to use this service.
+    the path is the URI to browse. This class implements resources service in JasperServer.
+    You need an open session *js_connect* to use this service.
+    *path* is the URI to browse.
+    '''
 
     def __init__(self, js_connect, path=''):
         self._connect = js_connect
@@ -39,8 +44,8 @@ class Resources (object):
 
     def search(self, description='', wstype='', recursive='0', item_max='0'):
         '''
-        Browse the path. When used without argument, it given a list of resources in the specified path.
-        With the arguments, you can search by terms, or by type.
+        Browse the path. When used without arguments, it gives the list of resources in the folder specified in the URL. With the arguments,   you can search for terms in the resource names or descriptions, search for all resources of a given *wstype*, and specify whether to search in subfolders.
+        This method return a list.
         '''
         params = {'q': description,
              'type': wstype,
@@ -58,6 +63,9 @@ class Resources (object):
 
 
 class Resource (object):
+    '''
+    an Resource instance implements resource service in JasperServer. you need an open session js_connect to use this service. *path* is the folder where methods will be used.
+    '''
 
     def __init__(self, js_connect, path=''):
         self._connect = js_connect
@@ -68,7 +76,9 @@ class Resource (object):
                uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                jdbc_username='', jdbc_password='', jdbc_url='', jdbc_driver='org.postgresql.Driver'):
         '''
-        Create a simple resource or a resource with an attached file
+        Create a simple resource or a resource with an attached file.
+        *wsType* : type of the resource (see jasper web service documentation).
+        If you send a file resource, you need an *uri_jrxmlfile*.
         '''
         url = ''
         hasData = False
@@ -86,7 +96,9 @@ class Resource (object):
                uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                jdbc_username='', jdbc_password='', jdbc_url='', jdbc_driver='org.postgresql.Driver'):
         '''
-        Modify a simple resource or a resource with an attached file
+        Modify a simple resource or a resource with an attached file.
+        *wsType* : type of the resource (see jasper web service documentation).
+        If you send a file resource, you need an *uri_jrxmlfile*.
         '''
         url = ''
         hasData = False
@@ -104,6 +116,8 @@ class Resource (object):
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         '''
         Request the content of the resource
+        This method is used to show the information about a specific resource. Getting a resource can serve several purposes: In the case of JasperReports, also known as report units, this service returns the structure of the JasperReport, including resourceDescriptors for any linked resources. Specifying a JasperReport and a file identifier returns the file itself. Specifying a query-based input control with arguments for running the query returns the dynamic values for the control.
+        Return a tuple with binary and text content.
         '''
         params = {'file': resource_name}
         if uri_datasource:
@@ -115,7 +129,7 @@ class Resource (object):
             if param_pl:
                 params['param_pl'] = param_pl
 
-        self._connect.get(self.url, params=params)
+        content, text = self._connect.get(self.url, params=params)
 
     def delete(self, resource_name):
         '''
@@ -128,12 +142,8 @@ class Resource (object):
                                  uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
                                  jdbc_username='', jdbc_password='', jdbc_url='',
                                  jdbc_driver='org.postgresql.Driver'):
-        '''
-        Build the resource descriptor in resourceDescriptor tags XML
-        resource_name : the name of the resource
-        wsType : type of the resource (see jasper web service documentation)
-        hasData : boolean. True means the resource is a file resource
-        '''
+        # Build the resource descriptor in resourceDescriptor tags XML
+        # Returns a tuple with the string of the resourceDescriptor, and the uri of the file resource.
         uri = self.path + '/' + resource_name
 
         rd = ResourceDescriptor(name=resource_name, wsType=wsType, uriString=uri)
