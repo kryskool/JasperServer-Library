@@ -26,7 +26,7 @@ from StringIO import StringIO
 try:
     from lxml import etree
 except ImportError:
-    import xml.etree.cElementTree as etree
+    import xml.etree.ElementTree as etree
 
 class User(object):
     """
@@ -43,7 +43,7 @@ class User(object):
         that match the search string
         """
         res = []
-        res_xml = self._connect.get(self.url + query)
+        content, res_xml = self._connect.get(self.url + query)
         if res_xml:
             fp = StringIO(res_xml)
             tree = etree.parse(fp)
@@ -68,6 +68,7 @@ class User(object):
         # ROLE_USER is necessary to display root folder (/) in jasperserver
         if 'ROLE_USER' not in roles:
             roles.append('ROLE_USER')
+
         root = etree.Element('user')
         etree.SubElement(root, 'enabled').text = 'true'
         etree.SubElement(root, 'fullName').text = name
@@ -76,8 +77,38 @@ class User(object):
         for r in roles:
             role = etree.SubElement(root, 'roles')
             etree.SubElement(role, 'roleName').text = r
-        return self._connect.put(self.url, 'text/plain', etree.tostring(root))
 
+        status, text = self._connect.put(self.url, data=etree.tostring(root))
+        return status, text
+
+    def modify(self, name, login, password, roles=['ROLE_USER']):
+        """
+        Modify an existent user, if not found return 404 not found
+        """
+        # ROLE_USER is necessary to display root folder (/) in jasperserver
+        if 'ROLE_USER' not in roles:
+            roles.append('ROLE_USER')
+
+        root = etree.Element('user')
+        etree.SubElement(root, 'enabled').text = 'true'
+        etree.SubElement(root, 'fullName').text = name
+        etree.SubElement(root, 'username').text = login
+        etree.SubElement(root, 'password').text = password
+        for r in roles:
+            role = etree.SubElement(root, 'roles')
+            etree.SubElement(role, 'roleName').text = r
+
+        status, text = self._connect.post(self.url + '/' + login, data=etree.tostring(root))
+        print status, text
+        return status, text
+
+    def delete(self, login):
+        """
+        Modify an existent user, if not found return 404 not found
+        """
+        status, text = self._connect.delete(self.url + '/' + login)
+        print status, text
+        return status, text
 
 class Role(object):
     """
