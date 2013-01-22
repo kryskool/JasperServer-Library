@@ -6,6 +6,13 @@ When using web services, the calling application must provide a valid user ID an
 .. automodule:: jasperserver.rest
     :members:
    
+Administration service
+======================
+
+The web services for administration consists to administers users and roles for searching, editing, deleting and creating. Only administrative users may access these REST services.
+
+.. automodule:: jasperserver.admin
+    :members:
 
 Resources service
 =================
@@ -15,7 +22,6 @@ This service lets you browse or search the repository in JasperServer. The resou
 .. autoclass:: jasperserver.services.Resources
     :members:
     
-
 Resource service
 ================
     
@@ -24,7 +30,6 @@ The resource service supports several HTTP methods to view, create, and modify r
 .. autoclass:: jasperserver.services.Resource
     :members:
          
- 
 Synchronization
 ===============
 
