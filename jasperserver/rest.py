@@ -80,7 +80,7 @@ class Client(object):
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
-        return response.headers['status'], response.text
+        return statuscode, response.text
 
     def post(self, url, data='', files='', uri=''):
         # Send a single or multipart content
@@ -95,7 +95,7 @@ class Client(object):
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
-        return response.headers['status'], response.text
+        return statuscode, response.text
 
     def delete(self, url):
         # Delete a content
@@ -106,8 +106,7 @@ class Client(object):
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
-        print response.headers['status'], response.text
-        return response.headers['status'], response.text
+        return statuscode, response.text
 
     @staticmethod
     def _clean_url(url):
