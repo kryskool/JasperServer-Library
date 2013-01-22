@@ -26,7 +26,8 @@ from StringIO import StringIO
 try:
     from lxml import etree
 except ImportError:
-    import xml.etree.ElementTree as etree
+    import xml.etree.cElementTree as etree
+
 
 class User(object):
     """
@@ -99,7 +100,6 @@ class User(object):
             etree.SubElement(role, 'roleName').text = r
 
         status, text = self._connect.post(self.url + '/' + login, data=etree.tostring(root))
-        print status, text
         return status, text
 
     def delete(self, login):
@@ -112,10 +112,73 @@ class User(object):
 
 class Role(object):
     """
-    Manage role inside the JasperServer
+    The role service allows administrators to view, create, edit, and delete role definitions. However, the role service does not define role membership
     """
 
     def __init__(self, js_connect):
-        pass
+        self._connect = js_connect
+        self.url = js_connect._rest_url + '/role/'
+
+    def search(self, query=''):
+        """
+        The Search method for the role service returns a list of roles
+        that match the search string. Without query, all roles are listed.
+        """
+        list_roles = []
+        content, xml = self._connect.get(self.url + query)
+        if xml:
+            tree = etree.XML(xml)
+            for role in tree.xpath('/roles/role/roleName'):
+                list_roles.append(role.text)
+
+        print 'resultat search role', query, '=\n', list_roles
+        return list_roles
+
+    def create(self, rolename):
+        """
+        Create a new role
+        """
+        role_rolename = 'ROLE_' + rolename.upper()
+        print role_rolename
+        root = etree.Element('role')
+        etree.SubElement(root, 'externallyDefined').text = 'false'
+        etree.SubElement(root, 'roleName').text = role_rolename
+
+        status, text = self._connect.put(self.url, data=etree.tostring(root))
+        print status, text
+        return status, text
+
+    def modify(self, rolename):
+        """
+        Modify an existent role
+        """
+        if 'ROLE_' in rolename:
+            role_rolename = rolename
+
+        else:
+            role_rolename = 'ROLE_' + rolename.upper()
+
+        root = etree.Element('role')
+        etree.SubElement(root, 'externallyDefined').text = 'false'
+        etree.SubElement(root, 'roleName').text = role_rolename
+
+        status, text = self._connect.post(self.url + '/' + role_rolename, data=etree.tostring(root))
+        print status, text
+        return status, text
+
+    def delete(self, rolename):
+        """
+        Delete an existent role, if not found return 404 not found
+        """
+        if 'ROLE_' in rolename:
+            role_rolename = rolename
+
+        else:
+            role_rolename = 'ROLE_' + rolename.upper()
+
+        status, text = self._connect.delete(self.url + '/' + role_rolename)
+        print status, text
+        return status, text
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
