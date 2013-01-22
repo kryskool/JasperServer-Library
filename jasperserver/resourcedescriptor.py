@@ -50,3 +50,5 @@ class Value(etree.ElementBase):
 
     def __init__(self, value):
         super(Value, self).__init__(value)
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
