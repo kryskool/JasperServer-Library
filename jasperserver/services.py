@@ -26,7 +26,7 @@ from resourcedescriptor import *
 try:
     from lxml import etree
 except ImportError:
-    import xml.etree.ElementTree as etree
+    import xml.etree.cElementTree as etree
 
 
 class Resources (object):
