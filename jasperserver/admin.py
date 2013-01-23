@@ -1,4 +1,4 @@
-ý!,# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    jasperserver library module for OpenERP
@@ -44,7 +44,7 @@ class User(object):
         that match the search string
         """
         res = []
-        content, res_xml = self._connect.get(self.url + query)
+        res_xml = self._connect.get(self.url + query)
         if res_xml:
             fp = StringIO(res_xml)
             tree = etree.parse(fp)
@@ -123,9 +123,9 @@ class Role(object):
         that match the search string. Without query, all roles are listed.
         """
         list_roles = []
-        content, xml = self._connect.get(self.url + query)
-        if xml:
-            tree = etree.XML(xml)
+        content = self._connect.get(self.url + query)
+        if content:
+            tree = etree.XML(content)
             for role in tree.xpath('/roles/role/roleName'):
                 list_roles.append(role.text)
 
