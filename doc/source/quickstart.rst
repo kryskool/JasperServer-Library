@@ -8,6 +8,7 @@ First, make sure that the Requests library is installed ::
 
     >>> pip install requests
 
+
 Let's get started with some examples
 
 Opening a session
@@ -20,7 +21,8 @@ To make an HTTP request in JasperReport Server, you must be connected to JRS
     >>> from jasperserver.rest import Client
     >>> client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
     
-You have a Client object called *client*. We can get all REST method from this open session.
+
+You have a Client object. Now, we can get all REST method from this open session.
 
 
 Searching an existent User or Role
@@ -36,7 +38,7 @@ You can browse for all user
     [{'username': 'anonymousUser', 'fullName': 'anonymousUser', 'enabled': 'true', 'roles': ['ROLE_ANONYMOUS']}, ...
     
     
-or search by terms
+Or search by terms
 
 .. code-block:: python
 
@@ -45,7 +47,7 @@ or search by terms
     [{'username': 'joeuser', 'fullName': 'Joe User', 'enabled': 'true', 'roles': ['ROLE_USER']}]
     
 
-to do the same with the Role service
+and you can do the same with the Role service
 
 .. code-block:: python
 
