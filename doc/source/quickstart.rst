@@ -17,8 +17,8 @@ To make an HTTP request in JasperReport Server, you must be connected to JRS
 
 .. code-block:: python
 
-    from jasperserver.rest import Client
-    client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
+    >>> from jasperserver.rest import Client
+    >>> client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
     
 You have a Client object called *client*. We can get all REST method from this open session.
 
@@ -30,6 +30,7 @@ You can browse for all user
 
 .. code-block:: python
 
+    >>> from jasperserver.admin import User, Role
     >>> users = User(client).search()
     >>> users
     [{'username': 'anonymousUser', 'fullName': 'anonymousUser', 'enabled': 'true', 'roles': ['ROLE_ANONYMOUS']}, ...
@@ -60,6 +61,7 @@ If you want listed all existent resources in JRS in a specified path, you could 
 
 .. code-block:: python
 
+    >>> from jasperserver.services import Resources
     >>> Resources(client, '/openerp/bases/openerp_demo').search('Product')
     
 You'll obtain a list with all resources containing the specified terms.
@@ -73,6 +75,7 @@ Keep in mind, you need sufficient permission to send this following requests.
 
 .. code-block:: python
 
+    >>> from jasperserver.services import Resource
     >>> jrxml = Resource(client, '/openerp/bases/reports')
     
 And send your query (with or without attached file) to JRS like this :
@@ -120,6 +123,7 @@ Maybe, you could need run it :
 
 .. code-block:: python
 
+    >>> from jasperserver.services import Report
     >>> report = Report(client, '/openerp/bases/openerp_demo')
     >>> report.run('myreport')
     
