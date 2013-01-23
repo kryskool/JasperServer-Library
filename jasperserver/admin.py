@@ -59,7 +59,7 @@ class User(object):
                             if j.tag == 'roleName':
                                 n[i.tag].append(j.text)
                 res.append(n)
-        print 'resultat search', query, '=\n', res
+
         return res
 
     def create(self, name, login, password, roles=['ROLE_USER']):
@@ -129,7 +129,6 @@ class Role(object):
             for role in tree.xpath('/roles/role/roleName'):
                 list_roles.append(role.text)
 
-        print 'resultat search role', query, '=\n', list_roles
         return list_roles
 
     def create(self, rolename):
