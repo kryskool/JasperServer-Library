@@ -46,7 +46,8 @@ class Resources (object):
 
     def search(self, description='', wstype='', recursive='0', item_max='0'):
         '''
-        Browse the path. When used without arguments, it gives the list of resources in the folder specified in the URL. With the arguments,   you can search for terms in the resource names or descriptions, search for all resources of a given *wstype*, and specify whether to search in subfolders.
+        Browse the path. When used without arguments, it gives the list of resources in the folder specified in the URL.
+        With the arguments, you can search for terms in the resource names or descriptions, search for all resources of a given *wstype*, and specify whether to search in subfolders.
         This method return a list.
         '''
         params = {'q': description,
@@ -115,13 +116,16 @@ class Resource (object):
         url = self.url + uri
         return self._connect.post(url, data=rd, files=path_fileresource, uri=uri)
 
-    def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
+    def get(self, resource_name, fileid=None, uri_datasource=None, param_p=None, param_pl=None):
         '''
         Request the content of the resource
         This method is used to show the information about a specific resource. Getting a resource can serve several purposes: In the case of JasperReports, also known as report units, this service returns the structure of the JasperReport, including resourceDescriptors for any linked resources. Specifying a JasperReport and a file identifier returns the file itself. Specifying a query-based input control with arguments for running the query returns the dynamic values for the control.
         Return the binary content.
         '''
-        params = {'file': resource_name}
+        params = {}
+        if fileid:
+            params['file'] = fileid
+
         if uri_datasource:
             params['IC_GET_QUERY_DATA'] = uri_datasource
 
@@ -131,7 +135,8 @@ class Resource (object):
             if param_pl:
                 params['param_pl'] = param_pl
 
-        return self._connect.get(self.url, params=params)
+        url = self.url + self.path + '/' + resource_name
+        return self._connect.get(url, params=params)
 
     def delete(self, resource_name):
         '''
@@ -186,7 +191,7 @@ class Report(object):
         self._connect = js_connect
         self.url = js_connect._rest_url + '_v2/reports' + path + '/'
 
-    def run(self, name, output_format, page='', onepagepersheet=''):
+    def run(self, name, output_format='pdf', page='', onepagepersheet=''):
         '''
         Create a report with rest_V2 service. you can export a specific *page* and select one page per sheet if you choose an XLS format.
         Return the binary content.
@@ -196,6 +201,7 @@ class Report(object):
             params = {'page': page}
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
+
         return self._connect.get(self.url + name + '.' + output_format, params=params)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
