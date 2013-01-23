@@ -1,5 +1,7 @@
+##########
 QuickStart
-**********
+##########
+
 
 JasperServer Library use REST protocol to communicate with JasperServer for reports or BI.
 This module defines classes which implement the HTTP methods (PUT, POST, DELETE, GET) and allow use basic services in JasperServer.
