@@ -65,7 +65,7 @@ class Client(object):
         if statuscode in StatusException:
             raise StatusException[statuscode]()
 
-        return response.content, response.text
+        return response.content
 
     def put(self, url, data='', files='', uri=''):
         # Send a single or multipart content
