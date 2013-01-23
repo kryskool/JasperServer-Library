@@ -29,6 +29,14 @@ The resource service supports several HTTP methods to view, create, and modify r
 
 .. autoclass:: jasperserver.services.Resource
     :members:
+    
+Report service
+==============
+
+This service simplifies the API for obtaining report output such as PDF or XLS.
+
+.. autoclass:: jasperserver.services.Report
+    :members:
          
 Synchronization
 ===============
