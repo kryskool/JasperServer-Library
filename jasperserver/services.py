@@ -21,6 +21,8 @@
 #
 ##############################################################################
 from resourcedescriptor import *
+import os
+from StringIO import StringIO
 
 
 try:
@@ -52,7 +54,7 @@ class Resources (object):
              'recursive': recursive,
              'limit': item_max
         }
-        content, xml = self._connect.get(self.url, params=params)
+        xml = self._connect.get(self.url, params=params)
         res = []
         if xml:
             tree = etree.XML(xml)
@@ -90,7 +92,7 @@ class Resource (object):
                                            jdbc_username=jdbc_username, jdbc_password=jdbc_password, jdbc_url=jdbc_url,
                                            jdbc_driver=jdbc_driver)
         url = self.url + self.path
-        self._connect.put(url, data=rd, files=path_fileresource, uri=uri)
+        return self._connect.put(url, data=rd, files=path_fileresource, uri=uri)
 
     def modify(self, resource_name, wsType, path_fileresource=None,
                uri_datasource='/datasources/openerp_demo', uri_jrxmlfile='',
@@ -111,13 +113,13 @@ class Resource (object):
                                            jdbc_driver=jdbc_driver)
 
         url = self.url + uri
-        self._connect.post(url, data=rd, files=path_fileresource, uri=uri)
+        return self._connect.post(url, data=rd, files=path_fileresource, uri=uri)
 
     def get(self, resource_name, uri_datasource=None, param_p=None, param_pl=None):
         '''
         Request the content of the resource
         This method is used to show the information about a specific resource. Getting a resource can serve several purposes: In the case of JasperReports, also known as report units, this service returns the structure of the JasperReport, including resourceDescriptors for any linked resources. Specifying a JasperReport and a file identifier returns the file itself. Specifying a query-based input control with arguments for running the query returns the dynamic values for the control.
-        Return a tuple with binary and text content.
+        Return the binary content.
         '''
         params = {'file': resource_name}
         if uri_datasource:
@@ -129,7 +131,7 @@ class Resource (object):
             if param_pl:
                 params['param_pl'] = param_pl
 
-        content, text = self._connect.get(self.url, params=params)
+        return self._connect.get(self.url, params=params)
 
     def delete(self, resource_name):
         '''
@@ -176,6 +178,9 @@ class Resource (object):
 
 
 class Report(object):
+    '''
+    This class implements the new rest_v2 service, only for running a report in the reports units path.
+    '''
 
     def __init__(self, js_connect, path):
         self._connect = js_connect
@@ -183,17 +188,14 @@ class Report(object):
 
     def run(self, name, output_format, page='', onepagepersheet=''):
         '''
-        Run a report with rest_V2 service
+        Create a report with rest_V2 service. you can export a specific *page* and select one page per sheet if you choose an XLS format.
+        Return the binary content.
         '''
         params = None
         if page:
             params = {'page': page}
         if onepagepersheet:
             params['onePagePerSheet'] = onepagepersheet
-        print self.url + name + '.' + output_format
-        content, text = self._connect.get(self.url + name + '.' + output_format, params=params)
-        return content, text
-        # with open('/tmp/%s.%s' % (name, output_format), 'w') as output_file:
-        #    output_file.write(content)
+        return self._connect.get(self.url + name + '.' + output_format, params=params)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
