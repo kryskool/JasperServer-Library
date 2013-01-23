@@ -120,15 +120,15 @@ Maybe, you could need run it :
 
 .. code-block:: python
 
-    report = Report(client, '/openerp/bases/openerp_demo')
-    report.run('myreport')
+    >>> report = Report(client, '/openerp/bases/openerp_demo')
+    >>> report.run('myreport')
     
 It will return a binary data stream of a pdf file by default. Just write it in a file.
 But, you can export the report in XLS :
 
 .. code-block:: python
 
-    report.run('myreport', output_format='xls')
+    >>> report.run('myreport', output_format='xls')
     
 JRS can export report in different output format.
 Please read the web service documentation of JRS to know all supported format.
