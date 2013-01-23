@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ý!,# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    jasperserver library module for OpenERP
@@ -79,8 +79,7 @@ class User(object):
             role = etree.SubElement(root, 'roles')
             etree.SubElement(role, 'roleName').text = r
 
-        status, text = self._connect.put(self.url, data=etree.tostring(root))
-        return status, text
+        return self._connect.put(self.url, data=etree.tostring(root))
 
     def modify(self, name, login, password, roles=['ROLE_USER']):
         """
@@ -106,9 +105,8 @@ class User(object):
         """
         Modify an existent user, if not found return 404 not found
         """
-        status, text = self._connect.delete(self.url + '/' + login)
-        print status, text
-        return status, text
+        return self._connect.delete(self.url + '/' + login)
+
 
 class Role(object):
     """
@@ -144,9 +142,7 @@ class Role(object):
         etree.SubElement(root, 'externallyDefined').text = 'false'
         etree.SubElement(root, 'roleName').text = role_rolename
 
-        status, text = self._connect.put(self.url, data=etree.tostring(root))
-        print status, text
-        return status, text
+        return self._connect.put(self.url, data=etree.tostring(root))
 
     def modify(self, rolename):
         """
@@ -162,9 +158,7 @@ class Role(object):
         etree.SubElement(root, 'externallyDefined').text = 'false'
         etree.SubElement(root, 'roleName').text = role_rolename
 
-        status, text = self._connect.post(self.url + '/' + role_rolename, data=etree.tostring(root))
-        print status, text
-        return status, text
+        return self._connect.post(self.url + '/' + role_rolename, data=etree.tostring(root))
 
     def delete(self, rolename):
         """
@@ -176,9 +170,6 @@ class Role(object):
         else:
             role_rolename = 'ROLE_' + rolename.upper()
 
-        status, text = self._connect.delete(self.url + '/' + role_rolename)
-        print status, text
-        return status, text
-
+        return self._connect.delete(self.url + '/' + role_rolename)
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
