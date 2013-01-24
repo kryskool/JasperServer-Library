@@ -48,7 +48,8 @@ class Resources (object):
         '''
         Browse the path. When used without arguments, it gives the list of resources in the folder specified in the URL.
         With the arguments, you can search for terms in the resource names or descriptions, search for all resources of a given *wstype*, and specify whether to search in subfolders.
-        This method return a list.
+        The *recursive* parameter is only used if a search criteria is specified (either *q* or *wstype*).
+        This method return each found resource : name, type and uri in a dictionnary.
         '''
         params = {'q': description,
              'type': wstype,
@@ -60,7 +61,11 @@ class Resources (object):
         if xml:
             tree = etree.XML(xml)
             for name in tree.findall('resourceDescriptor'):
-                res.append(name.get('name'))
+                r = {}
+                r['name'] = name.get('name')
+                r['wsType'] = name.get('wsType')
+                r['uriString'] = name.get('uriString')
+                res.append(r)
 
         return res
 
