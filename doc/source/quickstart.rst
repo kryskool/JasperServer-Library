@@ -66,9 +66,12 @@ If you want listed all existent resources in JRS in a specified path, you could 
 .. code-block:: python
 
     >>> from jasperserver.services import Resources
-    >>> Resources(client, '/openerp/bases/openerp_demo').search('Product')
+    >>> rs = Resources(client, '/openerp/bases/openerp_demo').search('Product')
+    >>> rs
+    [{'wsType': 'jrxml', 'uriString': '/openerp/reports/ProductCategory', 'name': 'ProductCategory'}, {'wsType':...
+
     
-You'll obtain a list with all resources containing the specified terms.
+For each found resources, you'll obtain his type, uri and name
 
     
 Create, Modify or Delete a Content
@@ -140,6 +143,50 @@ But, you can export the report in XLS :
     
 JRS can export report in different output format.
 Please read the web service documentation of JRS to know all supported format.
+
+
+Resources Synchronization
+=========================
+
+Keep in mind, your local path is the master.
+This service synchronize reports, and subreports on JRS. 
+If you want to synchronise reports and subreports, use synchronisation class as example below :
+
+Synchronization Example
+_______________________
+
+.. code-block:: python
+
+    >>> # -*- coding: utf-8 -*-
+    >>> import sys
+    >>> from jasperserver.rest import Client
+    >>> from jasperserver.admin import User, Role
+    >>> from jasperserver.synchronization import SyncResources
+    >>> from jasperserver.services import Report, Resource, Resources
+    >>> from jasperserver.exceptions import *
+    >>>
+    >>> try:
+    >>>     client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
+    
+    >>> except JsException:
+    >>>     print 'Error Authentification FAIL!'
+    >>> sys.exit(1)
+    >>>
+    >>> path_mainjrxml = '/my/local/source/path/mainjrxml/'
+    >>> path_subjrxml  = '/my/local/source/path/subjrxml/'
+    >>>
+    >>> path_js_jrxmlresource = '/my/jrs/mainjrxml/destination/'
+    >>> path_js_subjrxmlresource = '/my/jrs/subjrxml/destination/'
+    >>> path_reportUnit = '/my/jrs/reportunit/destination/'
+    >>> 
+    >>> sync = SyncResources(client)
+    >>> 
+    >>> sync.update_subreports(path_subjrxml)
+    >>> sync.update_mainreports(path_mainjrxml)
+    
+    
+   
+
 
 
     
