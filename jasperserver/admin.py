@@ -103,7 +103,7 @@ class User(object):
 
     def delete(self, login):
         """
-        Modify an existent user, if not found return 404 not found
+        Delete user with the specied login.
         """
         return self._connect.delete(self.url + '/' + login)
 
@@ -136,7 +136,6 @@ class Role(object):
         Create a new role
         """
         role_rolename = 'ROLE_' + rolename.upper()
-        print role_rolename
         root = etree.Element('role')
         etree.SubElement(root, 'externallyDefined').text = 'false'
         etree.SubElement(root, 'roleName').text = role_rolename
