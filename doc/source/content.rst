@@ -2,7 +2,7 @@
 Developer Interface
 ====================
 
-This part of the documentatin covers all class and method of the modul
+This part of the documentation covers all class and methods of the module
 
 REST Authentification
 =====================
@@ -47,35 +47,8 @@ This service simplifies the API for obtaining report output such as PDF or XLS.
 Synchronization
 ===============
 
-Synchronization allow update (create, modify, delete) all local JRXML files into JRXML Resource and report unit Resource to JasperServer
+Synchronization allow update (create, modify, delete) all local JRXML files into JRXML Resource and report unit Resource to JasperServer.
  
 .. automodule:: jasperserver.synchronization
     :members:
-   
-
-Synchronization Example
-_______________________
-
-.. code-block:: python
-
-    # -*- coding: utf-8 -*-
-    import sys
-    from jasperserver.rest import Client
-    from jasperserver.synchronization import SyncResources
-    from jasperserver.exceptions import JsException
-
-    try:    
-        client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
-    except JsException:
-        print 'Error Authentification FAIL!'
-        sys.exit(1)
-
-    path_mainjrxml = '/home/keyuser/workspace/jasperserver/repository/'
-    path_subjrxml  = '/home/keyuser/workspace/jasperserver/subreports/'
-    path_js_jrxmlresource = '/openerp/reports/'
-    path_subjrxmlresource = '/openerp/subreports/'
-    path_reportUnit = '/openerp/bases/openerp_demo/'
-
-    SyncResources(client).update_mainreports(path_mainjrxml)
-    SyncResources(client).update_subreports(path_subjrxml)
 
