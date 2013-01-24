@@ -43,21 +43,30 @@ class SyncResources(object):
 
         return list_src
 
+    def filter_resource_name(self, resources_list):
+        l = []
+        for r in resources_list:
+            for k, v in r.items():
+                if k == 'name':
+                    l.append(v)
+
+        return l
+
     def update_mainreports(self, path_src_mainjrxml, path_js_mainjrxml='/openerp/reports', path_js_ruresource='/openerp/bases/openerp_demo'):
         '''
         Update main reports (jrxml and report units)
         This method allows update local Resource with *path_src_jrxmlresource* to Resource JasperServer in the following repository :
         *path_js_jrxmlresource* and *path_js_ru_resource*.
         '''
+        listjs = []
         mainjrxml = Resource(self.js_session, path_js_mainjrxml)
         ru = Resource(self.js_session, path_js_ruresource)
-        listjs = Resources(self.js_session, path_js_ruresource).search()
-        listjsjrxml = Resources(self.js_session, path_js_mainjrxml).search()
+        listjs = self.filter_resource_name(Resources(self.js_session, path_js_ruresource).search())
+        listjsjrxml = self.filter_resource_name(Resources(self.js_session, path_js_mainjrxml).search())
         listsrc = self.src_res(path_src_mainjrxml)
 
         # look for resource in js but not in path oerp
         for resource in set(listjs).difference(listsrc):
-            print resource
             ru.delete(resource)
             mainjrxml.delete(resource)
 
@@ -79,7 +88,7 @@ class SyncResources(object):
         This method allows update local Resource with *path_src_subjrxml* to Resource JasperServer in *path_js_subjrxml*
         '''
         subjrxml = Resource(self.js_session, path_js_subjrxml)
-        listjssubjrxml = Resources(self.js_session, path_js_subjrxml).search()
+        listjssubjrxml = self.filter_resource_name(Resources(self.js_session, path_js_subjrxml).search())
         listsrcsub = self.src_res(path_src_subjrxml)
 
         # look for resource in js but not in path oerp
