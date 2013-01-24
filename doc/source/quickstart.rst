@@ -148,9 +148,11 @@ Please read the web service documentation of JRS to know all supported format.
 Resources Synchronization
 =========================
 
+
+This service allow synchronization of reports, and subreports on JRS. 
 Keep in mind, your local path is the master.
-This service synchronize reports, and subreports on JRS. 
-If you want to synchronise reports and subreports, use synchronisation class as example below :
+
+To use synchronisation, you could follow this example :
 
 Synchronization Example
 _______________________
