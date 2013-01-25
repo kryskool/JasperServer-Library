@@ -1,11 +1,9 @@
+# -*- coding: utf-8 -*-
 import sys
 from jasperserver.rest import Client
 from jasperserver.admin import User
-from jasperserver.repository import Resource
-from jasperserver.repository import Resources
-from jasperserver.exceptions import JsException
-from jasperserver.report import Reportv2
-from jasperserver.report import Report
+from jasperserver.services import Resources
+from jasperserver.exceptions import *
 
 try:
     client = Client('http://localhost:8080/jasperserver', 'jasperadmin', 'jasperadmin')
@@ -14,50 +12,26 @@ except JsException:
     sys.exit(1)
 
 
-try:
-    # Must return a list with one record
-    print '\n#######################\n'
-    User(client).search('joeuser')
-    print '\n#######################\n'
-    Resources(client).search('openerp_demo')
-except JsException:
-    print 'Error when send user query'
-    sys.exit(1)
+user = User(client)
+rs = Resources(client)
 
 try:
-    resource1 = Resource(client,
-                        '/openerp/bases/openerp_demo'
-    )
-    print '\n#######################\n'
-    resource1.create('$YOURPATH/JasperServer-Library/template/examplefolder_resource.xml',
-    #                '$YOURPATH/reportname.jrxml'
-    )
-    print '\n#######################\n'
-    #Reportv2 use REST-v2 report Service
-    report1 = Reportv2(client, '/openerp/bases/openerp_demo')
-    #Report use REST report Service
-    report2 = Report(client, '/openerp/bases/openerp_demo')
+    # creating ad setting a new user
+    user.create('myusername', 'mylogin', 'mypwd', roles=['ROLE_ADMINISTRATOR'])
+    print user.search('myusername')
 
-    name = raw_input('nom du report: ')
-    if name == 'exit':
-        print 'sortie du programme'
-        sys.exit()
-    extension = raw_input('format du fichier (par exemple: pdf): ')
-    report1.run(name, extension)
-    
-    print '\n#######################\n'
-    nametodelete = raw_input('Nom du rapport a supprimer : ')
-    resource1.delete (nametodelete)
-    
-    name = raw_input('nom du report2: ')
-    if name == 'exit':
-        print 'sortie du programme'
-        sys.exit()
-    report2.run(name)
-    print '\n#######################\n'
+    # searching a resource in JRS
+    print rs.search('resourcename')
 
-except:
-    print "ERREUR"
-    sys.exit(1)
+except Forbidden:
+    print 'Error, Existent Resource'
+
+except Unauthorized:
+    print 'Non Valide Request'
+
+except NotFound:
+    print 'Resource Not found'
+
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
