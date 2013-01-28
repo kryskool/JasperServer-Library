@@ -108,8 +108,8 @@ Ah, you don't need it anymore :
     
 If your resource is a reference to another one, you won't be able to delete it.
 
-The Report Unit Case
-====================
+The ReportUnit
+==============
 
 Report Unit is a more complicated resource in wich there a several resource as datasources and jrxml.
 
@@ -154,8 +154,6 @@ Keep in mind, your local path is the master.
 
 To use synchronisation, you could follow this example :
 
-Synchronization Example
-_______________________
 
 .. code-block:: python
 
