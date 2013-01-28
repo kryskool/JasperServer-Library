@@ -6,8 +6,6 @@
 Welcome to JasperServer-Library's documentation!
 ================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
