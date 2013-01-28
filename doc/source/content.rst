@@ -1,3 +1,7 @@
+.. automodule:: jasperserver.rest
+.. automodule:: jasperserver.admin
+.. automodule:: jasperserver.services
+
 ====================
 Developer Interface
 ====================
